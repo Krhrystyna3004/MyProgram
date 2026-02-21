@@ -1285,6 +1285,116 @@ namespace SecureNotes
                     [Language.Korean] = "PIN 변경",
                     [Language.Dutch] = "PIN wijzigen",
                     [Language.Swedish] = "Andra PIN"
+                },
+                ["error"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Помилка",
+                    [Language.English] = "Error"
+                },
+                ["warning"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Увага",
+                    [Language.English] = "Warning"
+                },
+                ["info"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Інфо",
+                    [Language.English] = "Info"
+                },
+                ["confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Підтвердження",
+                    [Language.English] = "Confirm"
+                },
+                ["confirmation"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Підтвердження",
+                    [Language.English] = "Confirmation"
+                },
+                ["done"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Готово",
+                    [Language.English] = "Done"
+                },
+                ["enter_username_password"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть логін і пароль.",
+                    [Language.English] = "Enter username and password."
+                },
+                ["password_min_4"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Пароль має бути не менше 4 символів.",
+                    [Language.English] = "Password must be at least 4 characters."
+                },
+                ["user_exists_or_db_error"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Користувач вже існує або помилка БД.",
+                    [Language.English] = "User already exists or database error."
+                },
+                ["user_not_found"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Користувача не знайдено.",
+                    [Language.English] = "User not found."
+                },
+                ["invalid_password"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Невірний пароль.",
+                    [Language.English] = "Invalid password."
+                },
+                ["delete_account_title"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Видалення акаунту",
+                    [Language.English] = "Delete account"
+                },
+                ["delete_account_warning"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Ця дія незворотна. Всі ваші нотатки та паролі\nбудуть видалені назавжди.",
+                    [Language.English] = "This action is irreversible. All your notes and passwords\nwill be permanently deleted."
+                },
+                ["enter_password_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть пароль для підтвердження:",
+                    [Language.English] = "Enter password to confirm:"
+                },
+                ["delete_account_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Ви впевнені? Цю дію неможливо скасувати.",
+                    [Language.English] = "Are you sure? This action cannot be undone."
+                },
+                ["account_deleted"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Акаунт успішно видалено.",
+                    [Language.English] = "Account was successfully deleted."
+                },
+                ["enter_group_name"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть назву групи.",
+                    [Language.English] = "Enter group name."
+                },
+                ["enter_invite_code"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть код запрошення.",
+                    [Language.English] = "Enter invite code."
+                },
+                ["group_not_found"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Групу не знайдено.",
+                    [Language.English] = "Group not found."
+                },
+                ["delete_group_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Видалити групу \"{0}\"?\nВсі нотатки групи будуть видалені!",
+                    [Language.English] = "Delete group \"{0}\"?\nAll group notes will be deleted!"
+                },
+                ["leave_group_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Покинути групу \"{0}\"?",
+                    [Language.English] = "Leave group \"{0}\"?"
+                },
+                ["confirm_delete_note"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Видалити нотатку?",
+                    [Language.English] = "Delete note?"
                 }
             };
 

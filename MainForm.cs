@@ -37,8 +37,10 @@ namespace SecureNotes
         public MainForm()
         {
             BuildUI();
+            LocalizationManager.LanguageChanged += ApplyLocalization;
             ThemeManager.Apply(this, Program.CurrentTheme);
             ApplyThemeToCustomControls();
+            ApplyLocalization();
             UpdateSidebarButtons();
 
             LoadGroups();
@@ -61,11 +63,12 @@ namespace SecureNotes
             this.MouseDown += (s, e) => Program.TouchActivity();
             this.KeyPress += (s, e) => Program.TouchActivity();
             this.Resize += (s, e) => AdjustLayout();
+            this.FormClosed += (s, e) => LocalizationManager.LanguageChanged -= ApplyLocalization;
         }
 
         private void BuildUI()
         {
-            Text = "SecureNotes - " + Program.CurrentUser.Username;
+            Text = $"{LocalizationManager.Get("app_title")} - {Program.CurrentUser.Username}";
             StartPosition = FormStartPosition.CenterScreen;
             ClientSize = new Size(1200, 750);
             MinimumSize = new Size(900, 550);
@@ -93,7 +96,7 @@ namespace SecureNotes
                 Size = new Size(250, 32),
                 Font = new Font("Segoe UI", 10f)
             };
-            UIHelpers.SetPlaceholder(txtSearch, "Пошук...");
+            UIHelpers.SetPlaceholder(txtSearch, LocalizationManager.Get("search") + "...");
             txtSearch.TextChanged += (s, e) => RenderCurrentTab();
             header.Controls.Add(txtSearch);
 
@@ -103,7 +106,7 @@ namespace SecureNotes
 
             btnCreate = new Button
             {
-                Text = "+ Додати нотатку",
+                Text = LocalizationManager.Get("add_note"),
                 Size = new Size(140, 40),
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -116,7 +119,7 @@ namespace SecureNotes
 
             btnThemeToggle = new Button
             {
-                Text = "Теми",
+                Text = LocalizationManager.Get("theme_style"),
                 Size = new Size(80, 40),
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9f),
@@ -131,7 +134,7 @@ namespace SecureNotes
 
             btnSettings = new Button
             {
-                Text = "Налаштування",
+                Text = LocalizationManager.Get("settings"),
                 Size = new Size(110, 40),
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 9f),
@@ -177,55 +180,89 @@ namespace SecureNotes
 
             btnNotes = new Button
             {
-                Text = "Нотатки",
+                Text = LocalizationManager.Get("notes"),
                 Location = new Point(8, sidebarY),
                 Size = new Size(184, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(12, 0, 0, 0)
             };
-            // ВИПРАВЛЕНО: Скидаємо _passwordsUnlocked при переході на інші вкладки
-            btnNotes.Click += (s, e) =>
+                lblSection.Text = LocalizationManager.Get("my_notes");
+                Text = LocalizationManager.Get("passwords"),
             {
-                _passwordsUnlocked = false; // Скидаємо розблокування паролів
+                Text = LocalizationManager.Get("groups"),
                 Program.SessionKey = null;
-                _tab = "notes";
-                lblSection.Text = "Мої нотатки";
-                UpdateSidebarButtons();
-                RenderCurrentTab();
+                lblSection.Text = LocalizationManager.Get("shared_notes");
+                Text = LocalizationManager.Get("my_notes"),
+            cmbTagFilter.Items.Add(LocalizationManager.Get("all_tags"));
+                Text = LocalizationManager.Get("invite_code") + ": --------",
             };
-            sidebar.Controls.Add(btnNotes);
-            sidebarY += 50;
+                Text = LocalizationManager.Get("copy") + " " + LocalizationManager.Get("invite_code"),
+                Text = LocalizationManager.Get("leave_group"),
 
-            btnPasswords = new Button
+                Text = LocalizationManager.Get("delete_group"),
             {
-                Text = "Паролі",
-                Location = new Point(8, sidebarY),
-                Size = new Size(184, 44),
-                Font = new Font("Segoe UI Semibold", 10f),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(12, 0, 0, 0)
+                Text = LocalizationManager.Get("shared_notes"),
+                Text = "+ " + LocalizationManager.Get("create_note"),
+            UIHelpers.SetPlaceholder(txtSharedGroupName, LocalizationManager.Get("group_name"));
+                Text = LocalizationManager.Get("create_group"),
+            UIHelpers.SetPlaceholder(txtSharedJoinCode, LocalizationManager.Get("invite_code"));
+                Text = LocalizationManager.Get("join_group"),
             };
+        private void ApplyLocalization()
+        {
+            Text = $"{LocalizationManager.Get("app_title")} - {Program.CurrentUser.Username}";
+            btnNotes.Text = LocalizationManager.Get("notes");
+            btnPasswords.Text = LocalizationManager.Get("passwords");
+            btnShared.Text = LocalizationManager.Get("groups");
+            btnSettings.Text = LocalizationManager.Get("settings");
+            btnCreate.Text = LocalizationManager.Get("add_note");
+            btnSharedCreateNote.Text = "+ " + LocalizationManager.Get("create_note");
+            btnSharedCreateGroup.Text = LocalizationManager.Get("create_group");
+            btnSharedJoinGroup.Text = LocalizationManager.Get("join_group");
+            btnCopyCode.Text = LocalizationManager.Get("copy") + " " + LocalizationManager.Get("invite_code");
+            btnLeaveGroup.Text = LocalizationManager.Get("leave_group");
+            btnDeleteGroup.Text = LocalizationManager.Get("delete_group");
+            cmbTagFilter.Items.Clear();
+            cmbTagFilter.Items.Add(LocalizationManager.Get("all_tags"));
+            UIHelpers.SetPlaceholder(txtSearch, LocalizationManager.Get("search") + "...");
+            UIHelpers.SetPlaceholder(txtSharedGroupName, LocalizationManager.Get("group_name"));
+            UIHelpers.SetPlaceholder(txtSharedJoinCode, LocalizationManager.Get("invite_code"));
+            UpdateSectionHeader();
+            LoadNotes();
+            UpdateGroupInfo();
+            RenderCurrentTab();
+        }
+
+        private void UpdateSectionHeader()
+        {
+            lblSection.Text = _tab == "passwords"
+                ? LocalizationManager.Get("passwords")
+                : _tab == "shared"
+                    ? LocalizationManager.Get("shared_notes")
+                    : LocalizationManager.Get("my_notes");
+        }
+
             btnPasswords.Click += BtnPasswords_Click;
             sidebar.Controls.Add(btnPasswords);
             sidebarY += 50;
 
             btnShared = new Button
             {
-                Text = "Групи",
+                Text = "ГѓГ°ГіГЇГЁ",
                 Location = new Point(8, sidebarY),
                 Size = new Size(184, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(12, 0, 0, 0)
             };
-            // ВИПРАВЛЕНО: Скидаємо _passwordsUnlocked при переході на інші вкладки
+            // Г‚Г€ГЏГђГЂГ‚Г‹Г…ГЌГЋ: Г‘ГЄГЁГ¤Г ВєГ¬Г® _passwordsUnlocked ГЇГ°ГЁ ГЇГҐГ°ГҐГµГ®Г¤Ві Г­Г  ВіГ­ГёВі ГўГЄГ«Г Г¤ГЄГЁ
             btnShared.Click += (s, e) =>
             {
-                _passwordsUnlocked = false; // Скидаємо розблокування паролів
+                _passwordsUnlocked = false; // Г‘ГЄГЁГ¤Г ВєГ¬Г® Г°Г®Г§ГЎГ«Г®ГЄГіГўГ Г­Г­Гї ГЇГ Г°Г®Г«ВіГў
                 Program.SessionKey = null;
                 _tab = "shared";
-                lblSection.Text = "Спільні нотатки";
+                lblSection.Text = "Г‘ГЇВіГ«ГјГ­Ві Г­Г®ГІГ ГІГЄГЁ";
                 UpdateSidebarButtons();
                 RenderCurrentTab();
             };
@@ -244,7 +281,7 @@ namespace SecureNotes
 
             lblSection = new Label
             {
-                Text = "Мої нотатки",
+                Text = "ГЊГ®Вї Г­Г®ГІГ ГІГЄГЁ",
                 Location = new Point(24, 16),
                 Font = new Font("Segoe UI Semibold", 14f),
                 AutoSize = true
@@ -258,7 +295,7 @@ namespace SecureNotes
                 DropDownStyle = ComboBoxStyle.DropDownList,
                 Font = new Font("Segoe UI", 10f)
             };
-            cmbTagFilter.Items.Add("(усі теги)");
+            cmbTagFilter.Items.Add("(ГіГ±Ві ГІГҐГЈГЁ)");
             cmbTagFilter.SelectedIndex = 0;
             cmbTagFilter.SelectedIndexChanged += (s, e) => RenderCurrentTab();
             contentPanel.Controls.Add(cmbTagFilter);
@@ -290,7 +327,7 @@ namespace SecureNotes
 
             lblGroupCode = new Label
             {
-                Text = "Код: --------",
+                Text = "ГЉГ®Г¤: --------",
                 Location = new Point(0, 0),
                 Font = new Font("Segoe UI", 9f),
                 AutoSize = true
@@ -299,7 +336,7 @@ namespace SecureNotes
 
             btnCopyCode = new Button
             {
-                Text = "Копіювати код",
+                Text = "ГЉГ®ГЇВіГѕГўГ ГІГЁ ГЄГ®Г¤",
                 Location = new Point(0, 26),
                 Size = new Size(176, 34),
                 Font = new Font("Segoe UI", 9f)
@@ -309,7 +346,7 @@ namespace SecureNotes
 
             btnLeaveGroup = new Button
             {
-                Text = "Покинути групу",
+                Text = "ГЏГ®ГЄГЁГ­ГіГІГЁ ГЈГ°ГіГЇГі",
                 Location = new Point(0, 66),
                 Size = new Size(176, 34),
                 Font = new Font("Segoe UI", 9f)
@@ -319,7 +356,7 @@ namespace SecureNotes
 
             btnDeleteGroup = new Button
             {
-                Text = "Видалити групу",
+                Text = "Г‚ГЁГ¤Г Г«ГЁГІГЁ ГЈГ°ГіГЇГі",
                 Location = new Point(0, 106),
                 Size = new Size(176, 34),
                 Font = new Font("Segoe UI", 9f)
@@ -331,7 +368,7 @@ namespace SecureNotes
 
             lblGroupHeader = new Label
             {
-                Text = "Спільні нотатки",
+                Text = "Г‘ГЇВіГ«ГјГ­Ві Г­Г®ГІГ ГІГЄГЁ",
                 Location = new Point(220, 16),
                 Font = new Font("Segoe UI Semibold", 14f),
                 Visible = false,
@@ -349,7 +386,7 @@ namespace SecureNotes
 
             btnSharedCreateNote = new Button
             {
-                Text = "+ Нотатка",
+                Text = "+ ГЌГ®ГІГ ГІГЄГ ",
                 Location = new Point(0, 0),
                 Size = new Size(110, 38),
                 Font = new Font("Segoe UI Semibold", 9f)
@@ -363,12 +400,12 @@ namespace SecureNotes
                 Size = new Size(140, 32),
                 Font = new Font("Segoe UI", 9f)
             };
-            UIHelpers.SetPlaceholder(txtSharedGroupName, "Назва групи");
+            UIHelpers.SetPlaceholder(txtSharedGroupName, "ГЌГ Г§ГўГ  ГЈГ°ГіГЇГЁ");
             sharedToolbarRow1.Controls.Add(txtSharedGroupName);
 
             btnSharedCreateGroup = new Button
             {
-                Text = "Створити",
+                Text = "Г‘ГІГўГ®Г°ГЁГІГЁ",
                 Location = new Point(280, 0),
                 Size = new Size(90, 38),
                 Font = new Font("Segoe UI", 9f)
@@ -382,12 +419,12 @@ namespace SecureNotes
                 Size = new Size(100, 32),
                 Font = new Font("Segoe UI", 9f)
             };
-            UIHelpers.SetPlaceholder(txtSharedJoinCode, "Код");
+            UIHelpers.SetPlaceholder(txtSharedJoinCode, "ГЉГ®Г¤");
             sharedToolbarRow1.Controls.Add(txtSharedJoinCode);
 
             btnSharedJoinGroup = new Button
             {
-                Text = "Приєднатися",
+                Text = "ГЏГ°ГЁВєГ¤Г­Г ГІГЁГ±Гї",
                 Location = new Point(500, 0),
                 Size = new Size(110, 38),
                 Font = new Font("Segoe UI", 9f)
@@ -445,11 +482,11 @@ namespace SecureNotes
         {
             switch (Program.CurrentTheme)
             {
-                case Theme.Dark: btnThemeToggle.Text = "Темна"; break;
-                case Theme.Ocean: btnThemeToggle.Text = "Океан"; break;
-                case Theme.Forest: btnThemeToggle.Text = "Ліс"; break;
-                case Theme.Sunset: btnThemeToggle.Text = "Захід"; break;
-                default: btnThemeToggle.Text = "Світла"; break;
+                case Theme.Dark: btnThemeToggle.Text = "Г’ГҐГ¬Г­Г "; break;
+                case Theme.Ocean: btnThemeToggle.Text = "ГЋГЄГҐГ Г­"; break;
+                case Theme.Forest: btnThemeToggle.Text = "Г‹ВіГ±"; break;
+                case Theme.Sunset: btnThemeToggle.Text = "Г‡Г ГµВіГ¤"; break;
+                default: btnThemeToggle.Text = "Г‘ГўВіГІГ«Г "; break;
             }
         }
 
@@ -463,7 +500,7 @@ namespace SecureNotes
             menu.ForeColor = ThemeManager.GetTextColor(Program.CurrentTheme);
 
             var themes = new string[] { "Light", "Dark", "Ocean", "Forest", "Sunset" };
-            var themeNames = new string[] { "Світла", "Темна", "Океан", "Ліс", "Захід сонця" };
+            var themeNames = new string[] { "Г‘ГўВіГІГ«Г ", "Г’ГҐГ¬Г­Г ", "ГЋГЄГҐГ Г­", "Г‹ВіГ±", "Г‡Г ГµВіГ¤ Г±Г®Г­Г¶Гї" };
 
             for (int i = 0; i < themes.Length; i++)
             {
@@ -508,31 +545,31 @@ namespace SecureNotes
                     UpdateThemeButtonText();
                     RenderCurrentTab();
                 }
-                // Якщо результат Abort - MainForm вже буде закрито через Owner.Close()
-            }
+                    lblGroupCode.Text = LocalizationManager.Get("invite_code") + ": " + grp.InviteCode;
+                    lblGroupHeader.Text = grp.Name;
         }
 
-        private void UpdateSidebarButtons()
+                btnCopyCode.Text = LocalizationManager.Get("copied");
         {
-            ThemeManager.StyleSidebarButton(btnNotes, Program.CurrentTheme, _tab == "notes");
-            ThemeManager.StyleSidebarButton(btnPasswords, Program.CurrentTheme, _tab == "passwords");
-            ThemeManager.StyleSidebarButton(btnShared, Program.CurrentTheme, _tab == "shared");
+                string.Format(LocalizationManager.Get("delete_group_confirm"), grp.Name),
+                LocalizationManager.Get("delete_group"),
+                    MessageBox.Show(LocalizationManager.Get("error") + ": " + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
-        private void UpdateGroupInfo()
-        {
-            if (_selectedGroupId.HasValue)
+                string.Format(LocalizationManager.Get("leave_group_confirm"), grp.Name),
+                LocalizationManager.Get("leave_group"),
+                    MessageBox.Show(LocalizationManager.Get("error") + ": " + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             {
-                var grp = _myGroups.FirstOrDefault(g => g.Id == _selectedGroupId.Value);
-                if (grp != null)
-                {
-                    lblGroupCode.Text = "Код: " + grp.InviteCode;
-                    lblGroupHeader.Text = "Група: " + grp.Name;
-                    btnDeleteGroup.Visible = grp.OwnerId == Program.CurrentUser.Id;
-                    btnLeaveGroup.Visible = grp.OwnerId != Program.CurrentUser.Id;
-                }
+            lblSection.Text = LocalizationManager.Get("passwords");
+                        lblSection.Text = LocalizationManager.Get("shared_notes");
+                        lblSection.Text = _tab == "passwords" ? LocalizationManager.Get("passwords") : LocalizationManager.Get("my_notes");
+                MessageBox.Show(LocalizationManager.Get("select_group"), LocalizationManager.Get("info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("enter_group_name"), LocalizationManager.Get("info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            UIHelpers.SetPlaceholder(txtSharedGroupName, LocalizationManager.Get("group_name"));
+                MessageBox.Show(LocalizationManager.Get("enter_invite_code"), LocalizationManager.Get("info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("group_not_found"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
-        }
+            UIHelpers.SetPlaceholder(txtSharedJoinCode, LocalizationManager.Get("invite_code"));
 
         private void BtnCopyCode_Click(object sender, EventArgs e)
         {
@@ -545,7 +582,7 @@ namespace SecureNotes
                 Clipboard.SetText(grp.InviteCode);
 
                 var originalText = btnCopyCode.Text;
-                btnCopyCode.Text = "Скопійовано!";
+                btnCopyCode.Text = "Г‘ГЄГ®ГЇВіГ©Г®ГўГ Г­Г®!";
                 btnCopyCode.ForeColor = ThemeManager.Success;
 
                 var timer = new Timer { Interval = 2000 };
@@ -569,8 +606,8 @@ namespace SecureNotes
             if (grp == null) return;
 
             var result = MessageBox.Show(
-                "Видалити групу \"" + grp.Name + "\"?\nВсі нотатки групи будуть видалені!",
-                "Видалення групи",
+                "Г‚ГЁГ¤Г Г«ГЁГІГЁ ГЈГ°ГіГЇГі \"" + grp.Name + "\"?\nГ‚Г±Ві Г­Г®ГІГ ГІГЄГЁ ГЈГ°ГіГЇГЁ ГЎГіГ¤ГіГІГј ГўГЁГ¤Г Г«ГҐГ­Ві!",
+                "Г‚ГЁГ¤Г Г«ГҐГ­Г­Гї ГЈГ°ГіГЇГЁ",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
             );
@@ -586,7 +623,7 @@ namespace SecureNotes
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Помилка: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("ГЏГ®Г¬ГЁГ«ГЄГ : " + ex.Message, "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -600,8 +637,8 @@ namespace SecureNotes
             if (grp == null) return;
 
             var result = MessageBox.Show(
-                "Покинути групу \"" + grp.Name + "\"?",
-                "Покинути групу",
+                "ГЏГ®ГЄГЁГ­ГіГІГЁ ГЈГ°ГіГЇГі \"" + grp.Name + "\"?",
+                "ГЏГ®ГЄГЁГ­ГіГІГЁ ГЈГ°ГіГЇГі",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
@@ -617,17 +654,17 @@ namespace SecureNotes
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Помилка: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("ГЏГ®Г¬ГЁГ«ГЄГ : " + ex.Message, "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
 
-        // ВИПРАВЛЕНО: Завжди просити PIN при вході на вкладку паролів
+        // Г‚Г€ГЏГђГЂГ‚Г‹Г…ГЌГЋ: Г‡Г ГўГ¦Г¤ГЁ ГЇГ°Г®Г±ГЁГІГЁ PIN ГЇГ°ГЁ ГўГµГ®Г¤Ві Г­Г  ГўГЄГ«Г Г¤ГЄГі ГЇГ Г°Г®Г«ВіГў
         private void BtnPasswords_Click(object sender, EventArgs e)
         {
             Program.TouchActivity();
 
-            // ВИПРАВЛЕНО: Завжди просимо PIN при кожному вході на вкладку
+            // Г‚Г€ГЏГђГЂГ‚Г‹Г…ГЌГЋ: Г‡Г ГўГ¦Г¤ГЁ ГЇГ°Г®Г±ГЁГ¬Г® PIN ГЇГ°ГЁ ГЄГ®Г¦Г­Г®Г¬Гі ГўГµГ®Г¤Ві Г­Г  ГўГЄГ«Г Г¤ГЄГі
             using (var pinForm = new PinPromptForm(Program.CurrentUser))
             {
                 if (pinForm.ShowDialog(this) == DialogResult.OK)
@@ -641,7 +678,7 @@ namespace SecureNotes
             }
 
             _tab = "passwords";
-            lblSection.Text = "Паролі";
+            lblSection.Text = "ГЏГ Г°Г®Г«Ві";
             UpdateSidebarButtons();
             RenderCurrentTab();
         }
@@ -666,12 +703,12 @@ namespace SecureNotes
                         _selectedGroupId = note.GroupId;
                         SelectGroupById(_selectedGroupId);
                         _tab = "shared";
-                        lblSection.Text = "Спільні нотатки";
+                        lblSection.Text = "Г‘ГЇВіГ«ГјГ­Ві Г­Г®ГІГ ГІГЄГЁ";
                     }
                     else
                     {
                         _tab = note.Type == "password" ? "passwords" : "notes";
-                        lblSection.Text = _tab == "passwords" ? "Паролі" : "Мої нотатки";
+                        lblSection.Text = _tab == "passwords" ? "ГЏГ Г°Г®Г«Ві" : "ГЊГ®Вї Г­Г®ГІГ ГІГЄГЁ";
                     }
 
                     UpdateSidebarButtons();
@@ -686,7 +723,7 @@ namespace SecureNotes
 
             if (!_selectedGroupId.HasValue)
             {
-                MessageBox.Show("Оберіть групу.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("ГЋГЎГҐГ°ВіГІГј ГЈГ°ГіГЇГі.", "Г“ГўГ ГЈГ ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -709,7 +746,7 @@ namespace SecureNotes
             var name = UIHelpers.IsPlaceholder(txtSharedGroupName) ? "" : txtSharedGroupName.Text.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                MessageBox.Show("Введіть назву групи.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Г‚ГўГҐГ¤ВіГІГј Г­Г Г§ГўГі ГЈГ°ГіГЇГЁ.", "Г“ГўГ ГЈГ ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -720,7 +757,7 @@ namespace SecureNotes
             RenderCurrentTab();
 
             txtSharedGroupName.Text = "";
-            UIHelpers.SetPlaceholder(txtSharedGroupName, "Назва групи");
+            UIHelpers.SetPlaceholder(txtSharedGroupName, "ГЌГ Г§ГўГ  ГЈГ°ГіГЇГЁ");
         }
 
         private void BtnSharedJoinGroup_Click(object sender, EventArgs e)
@@ -730,14 +767,14 @@ namespace SecureNotes
             var code = UIHelpers.IsPlaceholder(txtSharedJoinCode) ? "" : txtSharedJoinCode.Text.Trim();
             if (string.IsNullOrEmpty(code))
             {
-                MessageBox.Show("Введіть код запрошення.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Г‚ГўГҐГ¤ВіГІГј ГЄГ®Г¤ Г§Г ГЇГ°Г®ГёГҐГ­Г­Гї.", "Г“ГўГ ГЈГ ", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             var group = _db.GetGroupByInvite(code);
             if (group == null)
             {
-                MessageBox.Show("Групу з таким кодом не знайдено.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("ГѓГ°ГіГЇГі Г§ ГІГ ГЄГЁГ¬ ГЄГ®Г¤Г®Г¬ Г­ГҐ Г§Г­Г Г©Г¤ГҐГ­Г®.", "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -748,7 +785,7 @@ namespace SecureNotes
             RenderCurrentTab();
 
             txtSharedJoinCode.Text = "";
-            UIHelpers.SetPlaceholder(txtSharedJoinCode, "Код");
+            UIHelpers.SetPlaceholder(txtSharedJoinCode, "ГЉГ®Г¤");
         }
 
         private void RenderCurrentTab()
@@ -838,7 +875,7 @@ namespace SecureNotes
                     {
                         decrypted = CryptoService.DecryptAes(note.IvBase64, note.Content, Program.SessionKey);
                     }
-                    catch { decrypted = "(помилка)"; }
+                    catch { decrypted = "(ГЇГ®Г¬ГЁГ«ГЄГ )"; }
                 }
 
                 var card = new NoteCard();
@@ -868,7 +905,7 @@ namespace SecureNotes
             {
                 var hint = new Label
                 {
-                    Text = "Оберіть або створіть групу.",
+                    Text = LocalizationManager.Get("select_group"),
                     AutoSize = true,
                     Font = new Font("Segoe UI", 10f),
                     ForeColor = ThemeManager.GetTextSecondary(Program.CurrentTheme)
@@ -895,7 +932,7 @@ namespace SecureNotes
 
         private void Card_DeleteRequested(object sender, int noteId)
         {
-            if (MessageBox.Show("Видалити нотатку?", "Підтвердження", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            if (MessageBox.Show(LocalizationManager.Get("confirm_delete_note"), LocalizationManager.Get("confirmation"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 _db.DeleteNote(noteId);
                 LoadNotes();
@@ -919,12 +956,12 @@ namespace SecureNotes
                         _selectedGroupId = updated.GroupId;
                         SelectGroupById(_selectedGroupId);
                         _tab = "shared";
-                        lblSection.Text = "Спільні нотатки";
+                        lblSection.Text = LocalizationManager.Get("shared_notes");
                     }
                     else
                     {
                         _tab = updated.Type == "password" ? "passwords" : "notes";
-                        lblSection.Text = _tab == "passwords" ? "Паролі" : "Мої нотатки";
+                        lblSection.Text = _tab == "passwords" ? LocalizationManager.Get("passwords") : LocalizationManager.Get("my_notes");
                     }
 
                     UpdateSidebarButtons();
@@ -946,7 +983,7 @@ namespace SecureNotes
                 .ToList();
 
             cmbTagFilter.Items.Clear();
-            cmbTagFilter.Items.Add("(усі теги)");
+            cmbTagFilter.Items.Add(LocalizationManager.Get("all_tags"));
             foreach (var t in tags) cmbTagFilter.Items.Add(t);
             if (cmbTagFilter.Items.Count > 0) cmbTagFilter.SelectedIndex = 0;
         }
@@ -971,7 +1008,7 @@ namespace SecureNotes
         private bool TagMatches(Note n)
         {
             var selectedTag = cmbTagFilter.SelectedItem?.ToString();
-            if (string.IsNullOrEmpty(selectedTag) || selectedTag == "(усі теги)") return true;
+            if (string.IsNullOrEmpty(selectedTag) || selectedTag == LocalizationManager.Get("all_tags")) return true;
             var tags = (n.Tags ?? "").Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim());
             return tags.Contains(selectedTag);
         }
