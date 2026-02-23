@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Mysqlx.Crud;
 
 namespace SecureNotes
 {
@@ -1361,7 +1362,20 @@ namespace SecureNotes
                 ["password_min_length"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Пароль має бути не менше 4 символів.",
-                    [Language.English] = "Password must be at least 4 characters long."
+                    [Language.English] = "Password must be at least 4 characters long.",
+                    [Language.Polish] = "Hasło musi mieć co najmniej 4 znaki.",
+                    [Language.German] = "Das Passwort muss mindestens 4 Zeichen lang sein.",
+                    [Language.French] = "Le mot de passe doit contenir au moins 4 caractères.",
+                    [Language.Spanish] = "La contraseña debe tener al menos 4 caracteres.",
+                    [Language.Italian] = "La password deve contenere almeno 4 caratteri.",
+                    [Language.Portuguese] = "A senha deve ter pelo menos 4 caracteres.",
+                    [Language.Czech] = "Heslo musí mít alespoň 4 znaky.",
+                    [Language.Turkish] = "Şifre en az 4 karakter olmalıdır.",
+                    [Language.Japanese] = "パスワードは4文字以上である必要があります。",
+                    [Language.Chinese] = "密码长度至少为4个字符。",
+                    [Language.Korean] = "비밀번호는 최소 4자 이상이어야 합니다.",
+                    [Language.Dutch] = "Het wachtwoord moet minimaal 4 tekens lang zijn.",
+                    [Language.Swedish] = "Lösenordet måste vara minst 4 tecken långt."
                 },
                 ["user_exists_or_db_error"] = new Dictionary<Language, string>
                 {
@@ -1376,32 +1390,111 @@ namespace SecureNotes
                 ["invalid_password"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Невірний пароль.",
-                    [Language.English] = "Invalid password."
+                    [Language.English] = "Invalid password.",
+                    [Language.Polish] = "Nieprawidłowe hasło.",
+                    [Language.German] = "Ungültiges Passwort.",
+                    [Language.French] = "Mot de passe invalide.",
+                    [Language.Spanish] = "Contraseña no válida.",
+                    [Language.Italian] = "Password non valida.",
+                    [Language.Portuguese] = "Senha inválida.",
+                    [Language.Czech] = "Neplatné heslo.",
+                    [Language.Turkish] = "Geçersiz şifre.",
+                    [Language.Japanese] = "無効なパスワードです。",
+                    [Language.Chinese] = "密码无效。",
+                    [Language.Korean] = "잘못된 비밀번호입니다.",
+                    [Language.Dutch] = "Ongeldig wachtwoord.",
+                    [Language.Swedish] = "Ogiltigt lösenord."
                 },
                 ["account_deletion"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Видалення акаунту",
-                    [Language.English] = "Account deletion"
+                    [Language.English] = "Account deletion",
+                    [Language.Polish] = "Usuwanie konta",
+                    [Language.German] = "Kontolöschung",
+                    [Language.French] = "Suppression du compte",
+                    [Language.Spanish] = "Eliminación de la cuenta",
+                    [Language.Italian] = "Eliminazione account",
+                    [Language.Portuguese] = "Exclusão da conta",
+                    [Language.Czech] = "Smazání účtu",
+                    [Language.Turkish] = "Hesap silme",
+                    [Language.Japanese] = "アカウント削除",
+                    [Language.Chinese] = "删除账户",
+                    [Language.Korean] = "계정 삭제",
+                    [Language.Dutch] = "Account verwijderen",
+                    [Language.Swedish] = "Kontoborttagning"
                 },
                 ["irreversible_delete_warning"] = new Dictionary<Language, string>
                 {
-                    [Language.Ukrainian] = "Ця дія незворотна. Всі ваші нотатки та паролі\nбудуть видалені назавжди.",
-                    [Language.English] = "This action is irreversible. All your notes and passwords\nwill be permanently deleted."
+                    [Language.Ukrainian] = "Ця дія незворотна. Всі ваші нотатки та паролі будуть видалені назавжди.",
+                    [Language.English] = "This action is irreversible. All your notes and passwords will be permanently deleted.",
+                    [Language.Polish] = "Ta operacja jest nieodwracalna. Wszystkie Twoje notatki i hasła zostaną trwale usunięte.",
+                    [Language.German] = "Diese Aktion ist unwiderruflich. Alle Ihre Notizen und Passwörter werden dauerhaft gelöscht.",
+                    [Language.French] = "Cette action est irréversible. Toutes vos notes et mots de passe seront supprimés définitivement.",
+                    [Language.Spanish] = "Esta acción es irreversible. Todas tus notas y contraseñas se eliminarán permanentemente.",
+                    [Language.Italian] = "Questa azione è irreversibile. Tutte le tue note e password saranno eliminate definitivamente.",
+                    [Language.Portuguese] = "Esta ação é irreversível. Todas as suas notas e senhas serão excluídas permanentemente.",
+                    [Language.Czech] = "Tato akce je nevratná. Všechny vaše poznámky a hesla budou trvale smazány.",
+                    [Language.Turkish] = "Bu işlem geri alınamaz. Tüm notlarınız ve şifreleriniz kalıcı olarak silinecektir.",
+                    [Language.Japanese] = "この操作は元に戻せません。すべてのメモとパスワードが 完全に削除されます。",
+                    [Language.Chinese] = "此操作不可撤销。您的所有笔记和密码 将被永久删除。",
+                    [Language.Korean] = "이 작업은 되돌릴 수 없습니다. 모든 메모와 비밀번호가 영구적으로 삭제됩니다.",
+                    [Language.Dutch] = "Deze actie is onomkeerbaar. Al je notities en wachtwoorden worden permanent verwijderd.",
+                    [Language.Swedish] = "Denna åtgärd är oåterkallelig. Alla dina anteckningar och lösenord kommer att raderas permanent."
+
                 },
                 ["enter_password_confirm"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Введіть пароль для підтвердження:",
-                    [Language.English] = "Enter your password to confirm:"
+                    [Language.English] = "Enter your password to confirm:",
+                    [Language.Polish] = "Wpisz hasło, aby potwierdzić:",
+                    [Language.German] = "Geben Sie zur Bestätigung Ihr Passwort ein:",
+                    [Language.French] = "Entrez votre mot de passe pour confirmer :",
+                    [Language.Spanish] = "Introduce tu contraseña para confirmar:",
+                    [Language.Italian] = "Inserisci la password per confermare:",
+                    [Language.Portuguese] = "Digite sua senha para confirmar:",
+                    [Language.Czech] = "Pro potvrzení zadejte heslo:",
+                    [Language.Turkish] = "Onaylamak için şifrenizi girin:",
+                    [Language.Japanese] = "確認のためパスワードを入力してください：",
+                    [Language.Chinese] = "请输入密码以确认：",
+                    [Language.Korean] = "확인을 위해 비밀번호를 입력하세요:",
+                    [Language.Dutch] = "Voer je wachtwoord in ter bevestiging:",
+                    [Language.Swedish] = "Ange ditt lösenord för att bekräfta:"
                 },
                 ["are_you_sure_irreversible"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Ви впевнені? Цю дію неможливо скасувати.",
-                    [Language.English] = "Are you sure? This action cannot be undone."
+                    [Language.English] = "Are you sure? This action cannot be undone.",
+                    [Language.Polish] = "Czy na pewno? Tej operacji nie można cofnąć.",
+                    [Language.German] = "Sind Sie sicher? Diese Aktion kann nicht rückgängig gemacht werden.",
+                    [Language.French] = "Êtes-vous sûr ? Cette action est irréversible.",
+                    [Language.Spanish] = "¿Estás seguro? Esta acción no se puede deshacer.",
+                    [Language.Italian] = "Sei sicuro? Questa azione non può essere annullata.",
+                    [Language.Portuguese] = "Tem certeza? Esta ação não pode ser desfeita.",
+                    [Language.Czech] = "Jste si jisti? Tuto akci nelze vrátit zpět.",
+                    [Language.Turkish] = "Emin misiniz? Bu işlem geri alınamaz.",
+                    [Language.Japanese] = "本当によろしいですか？この操作は元に戻せません。",
+                    [Language.Chinese] = "你确定吗？此操作无法撤销。",
+                    [Language.Korean] = "정말로 진행하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+                    [Language.Dutch] = "Weet je het zeker? Deze actie kan niet ongedaan worden gemaakt.",
+                    [Language.Swedish] = "Är du säker? Denna åtgärd kan inte ångras."
                 },
                 ["account_deleted_successfully"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Акаунт успішно видалено.",
-                    [Language.English] = "Account deleted successfully."
+                    [Language.English] = "Account deleted successfully.",
+                    [Language.Polish] = "Konto zostało pomyślnie usunięte.",
+                    [Language.German] = "Konto wurde erfolgreich gelöscht.",
+                    [Language.French] = "Le compte a été supprimé avec succès.",
+                    [Language.Spanish] = "Cuenta eliminada correctamente.",
+                    [Language.Italian] = "Account eliminato con successo.",
+                    [Language.Portuguese] = "Conta excluída com sucesso.",
+                    [Language.Czech] = "Účet byl úspěšně smazán.",
+                    [Language.Turkish] = "Hesap başarıyla silindi.",
+                    [Language.Japanese] = "アカウントが正常に削除されました。",
+                    [Language.Chinese] = "账户已成功删除。",
+                    [Language.Korean] = "계정이 성공적으로 삭제되었습니다.",
+                    [Language.Dutch] = "Account is succesvol verwijderd.",
+                    [Language.Swedish] = "Kontot har tagits bort."
                 },
                 ["pin_for_passwords"] = new Dictionary<Language, string>
                 {
@@ -1471,42 +1564,146 @@ namespace SecureNotes
                 ["current_password"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Поточний пароль",
-                    [Language.English] = "Current password"
+                    [Language.English] = "Current password",
+                    [Language.Polish] = "Aktualne hasło",
+                    [Language.German] = "Aktuelles Passwort",
+                    [Language.French] = "Mot de passe actuel",
+                    [Language.Spanish] = "Contraseña actual",
+                    [Language.Italian] = "Password attuale",
+                    [Language.Portuguese] = "Senha atual",
+                    [Language.Czech] = "Aktuální heslo",
+                    [Language.Turkish] = "Mevcut şifre",
+                    [Language.Japanese] = "現在のパスワード",
+                    [Language.Chinese] = "当前密码",
+                    [Language.Korean] = "현재 비밀번호",
+                    [Language.Dutch] = "Huidig wachtwoord",
+                    [Language.Swedish] = "Nuvarande lösenord"
                 },
                 ["new_password"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Новий пароль",
-                    [Language.English] = "New password"
+                    [Language.English] = "New password",
+                    [Language.Polish] = "Nowe hasło",
+                    [Language.German] = "Neues Passwort",
+                    [Language.French] = "Nouveau mot de passe",
+                    [Language.Spanish] = "Nueva contraseña",
+                    [Language.Italian] = "Nuova password",
+                    [Language.Portuguese] = "Nova senha",
+                    [Language.Czech] = "Nové heslo",
+                    [Language.Turkish] = "Yeni şifre",
+                    [Language.Japanese] = "新しいパスワード",
+                    [Language.Chinese] = "新密码",
+                    [Language.Korean] = "새 비밀번호",
+                    [Language.Dutch] = "Nieuw wachtwoord",
+                    [Language.Swedish] = "Nytt lösenord"
                 },
                 ["confirm_new_password"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Підтвердіть новий пароль",
-                    [Language.English] = "Confirm new password"
+                    [Language.English] = "Confirm new password",
+                    [Language.Polish] = "Potwierdź nowe hasło",
+                    [Language.German] = "Neues Passwort bestätigen",
+                    [Language.French] = "Confirmez le nouveau mot de passe",
+                    [Language.Spanish] = "Confirmar nueva contraseña",
+                    [Language.Italian] = "Conferma nuova password",
+                    [Language.Portuguese] = "Confirmar nova senha",
+                    [Language.Czech] = "Potvrďte nové heslo",
+                    [Language.Turkish] = "Yeni şifreyi onayla",
+                    [Language.Japanese] = "新しいパスワードを確認",
+                    [Language.Chinese] = "确认新密码",
+                    [Language.Korean] = "새 비밀번호 확인",
+                    [Language.Dutch] = "Bevestig nieuw wachtwoord",
+                    [Language.Swedish] = "Bekräfta nytt lösenord"
                 },
                 ["fill_required_fields"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Заповніть всі поля.",
-                    [Language.English] = "Fill in all required fields."
+                    [Language.English] = "Fill in all required fields.",
+                    [Language.Polish] = "Wypełnij wszystkie wymagane pola.",
+                    [Language.German] = "Füllen Sie alle erforderlichen Felder aus.",
+                    [Language.French] = "Remplissez tous les champs obligatoires.",
+                    [Language.Spanish] = "Rellena todos los campos obligatorios.",
+                    [Language.Italian] = "Compila tutti i campi obbligatori.",
+                    [Language.Portuguese] = "Preencha todos os campos obrigatórios.",
+                    [Language.Czech] = "Vyplňte všechna povinná pole.",
+                    [Language.Turkish] = "Lütfen tüm zorunlu alanları doldurun.",
+                    [Language.Japanese] = "必須項目をすべて入力してください。",
+                    [Language.Chinese] = "请填写所有必填字段。",
+                    [Language.Korean] = "모든 필수 항목을 입력해 주세요.",
+                    [Language.Dutch] = "Vul alle verplichte velden in.",
+                    [Language.Swedish] = "Fyll i alla obligatoriska fält."
                 },
                 ["passwords_do_not_match"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Паролі не збігаються.",
-                    [Language.English] = "Passwords do not match."
+                    [Language.English] = "Passwords do not match.",
+                    [Language.Polish] = "Hasła nie są takie same.",
+                    [Language.German] = "Die Passwörter stimmen nicht überein.",
+                    [Language.French] = "Les mots de passe ne correspondent pas.",
+                    [Language.Spanish] = "Las contraseñas no coinciden.",
+                    [Language.Italian] = "Le password non corrispondono.",
+                    [Language.Portuguese] = "As senhas não coincidem.",
+                    [Language.Czech] = "Hesla se neshodují.",
+                    [Language.Turkish] = "Şifreler eşleşmiyor.",
+                    [Language.Japanese] = "パスワードが一致しません。",
+                    [Language.Chinese] = "两次输入的密码不一致。",
+                    [Language.Korean] = "비밀번호가 일치하지 않습니다.",
+                    [Language.Dutch] = "Wachtwoorden komen niet overeen.",
+                    [Language.Swedish] = "Lösenorden matchar inte."
                 },
                 ["current_password_incorrect"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Невірний поточний пароль.",
-                    [Language.English] = "Current password is incorrect."
+                    [Language.English] = "Current password is incorrect.",
+                    [Language.Polish] = "Aktualne hasło jest nieprawidłowe.",
+                    [Language.German] = "Das aktuelle Passwort ist falsch.",
+                    [Language.French] = "Le mot de passe actuel est incorrect.",
+                    [Language.Spanish] = "La contraseña actual es incorrecta.",
+                    [Language.Italian] = "La password attuale non è corretta.",
+                    [Language.Portuguese] = "A senha atual está incorreta.",
+                    [Language.Czech] = "Aktuální heslo je nesprávné.",
+                    [Language.Turkish] = "Mevcut şifre yanlış.",
+                    [Language.Japanese] = "現在のパスワードが正しくありません。",
+                    [Language.Chinese] = "当前密码不正确。",
+                    [Language.Korean] = "현재 비밀번호가 올바르지 않습니다.",
+                    [Language.Dutch] = "Huidig wachtwoord is onjuist.",
+                    [Language.Swedish] = "Nuvarande lösenord är felaktigt."
                 },
                 ["password_changed_success"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Пароль успішно змінено!",
-                    [Language.English] = "Password changed successfully!"
+                    [Language.English] = "Password changed successfully!",
+                    [Language.Polish] = "Hasło zostało pomyślnie zmienione!",
+                    [Language.German] = "Passwort wurde erfolgreich geändert!",
+                    [Language.French] = "Le mot de passe a été modifié avec succès !",
+                    [Language.Spanish] = "¡La contraseña se cambió correctamente!",
+                    [Language.Italian] = "Password cambiata con successo!",
+                    [Language.Portuguese] = "Senha alterada com sucesso!",
+                    [Language.Czech] = "Heslo bylo úspěšně změněno!",
+                    [Language.Turkish] = "Şifre başarıyla değiştirildi!",
+                    [Language.Japanese] = "パスワードが正常に変更されました！",
+                    [Language.Chinese] = "密码修改成功！",
+                    [Language.Korean] = "비밀번호가 성공적으로 변경되었습니다!",
+                    [Language.Dutch] = "Wachtwoord is succesvol gewijzigd!",
+                    [Language.Swedish] = "Lösenordet har ändrats!"
                 },
                 ["password_change_failed"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Помилка: ",
-                    [Language.English] = "Error: "
+                    [Language.English] = "Error: ",
+                    [Language.Polish] = "Błąd: ",
+                    [Language.German] = "Fehler: ",
+                    [Language.French] = "Erreur : ",
+                    [Language.Spanish] = "Error: ",
+                    [Language.Italian] = "Errore: ",
+                    [Language.Portuguese] = "Erro: ",
+                    [Language.Czech] = "Chyba: ",
+                    [Language.Turkish] = "Hata: ",
+                    [Language.Japanese] = "エラー: ",
+                    [Language.Chinese] = "错误：",
+                    [Language.Korean] = "오류: ",
+                    [Language.Dutch] = "Fout: ",
+                    [Language.Swedish] = "Fel: "
                 },
                 ["your_code_not_created"] = new Dictionary<Language, string>
                 {
@@ -1542,6 +1739,157 @@ namespace SecureNotes
                 {
                     [Language.Ukrainian] = "Група не знайдена.",
                     [Language.English] = "Group not found."
+                },
+                ["info"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Інформація",
+                    [Language.English] = "Info"
+                },
+                ["enter_group_name"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть назву групи.",
+                    [Language.English] = "Enter a group name."
+                },
+                ["delete_group_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Видалити групу \"{0}\"?",
+                    [Language.English] = "Delete group \"{0}\"?"
+                },
+                ["delete_group_irreversible"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Цю дію неможливо скасувати!",
+                    [Language.English] = "This action cannot be undone!"
+                },
+                ["leave_group_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Покинути групу \"{0}\"?",
+                    [Language.English] = "Leave group \"{0}\"?"
+                },
+                ["enter_group_name"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть назву групи",
+                    [Language.English] = "Enter group name",
+                    [Language.Polish] = "Wpisz nazwę grupy",
+                    [Language.German] = "Gruppennamen eingeben",
+                    [Language.French] = "Entrez le nom du groupe",
+                    [Language.Spanish] = "Ingrese el nombre del grupo",
+                    [Language.Italian] = "Inserisci il nome del gruppo",
+                    [Language.Portuguese] = "Digite o nome do grupo",
+                    [Language.Czech] = "Zadejte název skupiny",
+                    [Language.Turkish] = "Grup adını girin",
+                    [Language.Japanese] = "グループ名を入力してください",
+                    [Language.Chinese] = "请输入群组名称",
+                    [Language.Korean] = "그룹 이름을 입력하세요",
+                    [Language.Dutch] = "Voer de groepsnaam in",
+                    [Language.Swedish] = "Ange gruppnamn"
+                },
+                ["file_count"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "файлів",
+                    [Language.English] = "files",
+                    [Language.Polish] = "plików",
+                    [Language.German] = "Dateien",
+                    [Language.French] = "fichiers",
+                    [Language.Spanish] = "archivos",
+                    [Language.Italian] = "file",
+                    [Language.Portuguese] = "arquivos",
+                    [Language.Czech] = "souborů",
+                    [Language.Turkish] = "dosya",
+                    [Language.Japanese] = "ファイル",
+                    [Language.Chinese] = "个文件",
+                    [Language.Korean] = "파일",
+                    [Language.Dutch] = "bestanden",
+                    [Language.Swedish] = "filer"
+                },
+                ["light"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Світла",
+                    [Language.English] = "Light",
+                    [Language.Polish] = "Jasny",
+                    [Language.German] = "Hell",
+                    [Language.French] = "Clair",
+                    [Language.Spanish] = "Claro",
+                    [Language.Italian] = "Chiaro",
+                    [Language.Portuguese] = "Claro",
+                    [Language.Czech] = "Světlé",
+                    [Language.Turkish] = "Açık",
+                    [Language.Japanese] = "ライト",
+                    [Language.Chinese] = "浅色",
+                    [Language.Korean] = "라이트",
+                    [Language.Dutch] = "Licht",
+                    [Language.Swedish] = "Ljus"
+                },
+                ["dark"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Темна",
+                    [Language.English] = "Dark",
+                    [Language.Polish] = "Ciemny",
+                    [Language.German] = "Dunkel",
+                    [Language.French] = "Sombre",
+                    [Language.Spanish] = "Oscuro",
+                    [Language.Italian] = "Scuro",
+                    [Language.Portuguese] = "Escuro",
+                    [Language.Czech] = "Tmavé",
+                    [Language.Turkish] = "Koyu",
+                    [Language.Japanese] = "ダーク",
+                    [Language.Chinese] = "深色",
+                    [Language.Korean] = "다크",
+                    [Language.Dutch] = "Donker",
+                    [Language.Swedish] = "Mörk"
+                },
+                ["ocean"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Океан",
+                    [Language.English] = "Ocean",
+                    [Language.Polish] = "Ocean",
+                    [Language.German] = "Ozean",
+                    [Language.French] = "Océan",
+                    [Language.Spanish] = "Océano",
+                    [Language.Italian] = "Oceano",
+                    [Language.Portuguese] = "Oceano",
+                    [Language.Czech] = "Oceán",
+                    [Language.Turkish] = "Okyanus",
+                    [Language.Japanese] = "オーシャン",
+                    [Language.Chinese] = "海洋",
+                    [Language.Korean] = "오션",
+                    [Language.Dutch] = "Oceaan",
+                    [Language.Swedish] = "Ocean"
+                },
+                ["forest"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Ліс",
+                    [Language.English] = "Forest",
+                    [Language.Polish] = "Las",
+                    [Language.German] = "Wald",
+                    [Language.French] = "Forêt",
+                    [Language.Spanish] = "Bosque",
+                    [Language.Italian] = "Foresta",
+                    [Language.Portuguese] = "Floresta",
+                    [Language.Czech] = "Les",
+                    [Language.Turkish] = "Orman",
+                    [Language.Japanese] = "フォレスト",
+                    [Language.Chinese] = "森林",
+                    [Language.Korean] = "포레스트",
+                    [Language.Dutch] = "Bos",
+                    [Language.Swedish] = "Skog"
+                },
+                ["sunset"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Захід сонця",
+                    [Language.English] = "Sunset",
+                    [Language.Polish] = "Zachód słońca",
+                    [Language.German] = "Sonnenuntergang",
+                    [Language.French] = "Coucher de soleil",
+                    [Language.Spanish] = "Atardecer",
+                    [Language.Italian] = "Tramonto",
+                    [Language.Portuguese] = "Pôr do sol",
+                    [Language.Czech] = "Západ slunce",
+                    [Language.Turkish] = "Gün batımı",
+                    [Language.Japanese] = "サンセット",
+                    [Language.Chinese] = "日落",
+                    [Language.Korean] = "선셋",
+                    [Language.Dutch] = "Zonsondergang",
+                    [Language.Swedish] = "Solnedgång"
                 },
                 ["joined_group_check_shared"] = new Dictionary<Language, string>
                 {

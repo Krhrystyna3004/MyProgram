@@ -96,11 +96,11 @@ namespace SecureNotes
 
             var themes = new ThemeItem[]
             {
-                new ThemeItem("Light", LocalizationManager.Get("light"), Color.FromArgb(250, 251, 252), ThemeManager.Accent),
-                new ThemeItem("Dark", LocalizationManager.Get("dark"), Color.FromArgb(17, 17, 21), ThemeManager.Accent),
-                new ThemeItem("Ocean", LocalizationManager.Get("ocean"), Color.FromArgb(15, 23, 42), Color.FromArgb(56, 189, 248)),
-                new ThemeItem("Forest", LocalizationManager.Get("forest"), Color.FromArgb(20, 26, 20), Color.FromArgb(74, 222, 128)),
-                new ThemeItem("Sunset", LocalizationManager.Get("sunset"), Color.FromArgb(30, 20, 20), Color.FromArgb(251, 146, 60))
+                new ThemeItem("Light", LocalizationManager.Get("theme_light"), Color.FromArgb(250, 251, 252), ThemeManager.Accent),
+                new ThemeItem("Dark", LocalizationManager.Get("theme_dark"), Color.FromArgb(17, 17, 21), ThemeManager.Accent),
+                new ThemeItem("Ocean", LocalizationManager.Get("theme_ocean"), Color.FromArgb(15, 23, 42), Color.FromArgb(56, 189, 248)),
+                new ThemeItem("Forest", LocalizationManager.Get("theme_forest"), Color.FromArgb(20, 26, 20), Color.FromArgb(74, 222, 128)),
+                new ThemeItem("Sunset", LocalizationManager.Get("theme_sunset"), Color.FromArgb(30, 20, 20), Color.FromArgb(251, 146, 60))
             };
 
             foreach (var t in themes) cmbTheme.Items.Add(t);
@@ -244,11 +244,11 @@ namespace SecureNotes
             cmbTheme.Items.Clear();
             var themes = new ThemeItem[]
             {
-                new ThemeItem("Light", LocalizationManager.Get("light"), Color.FromArgb(250, 251, 252), ThemeManager.Accent),
-                new ThemeItem("Dark", LocalizationManager.Get("dark"), Color.FromArgb(17, 17, 21), ThemeManager.Accent),
-                new ThemeItem("Ocean", LocalizationManager.Get("ocean"), Color.FromArgb(15, 23, 42), Color.FromArgb(56, 189, 248)),
-                new ThemeItem("Forest", LocalizationManager.Get("forest"), Color.FromArgb(20, 26, 20), Color.FromArgb(74, 222, 128)),
-                new ThemeItem("Sunset", LocalizationManager.Get("sunset"), Color.FromArgb(30, 20, 20), Color.FromArgb(251, 146, 60))
+                new ThemeItem("Light", LocalizationManager.Get("theme_light"), Color.FromArgb(250, 251, 252), ThemeManager.Accent),
+                new ThemeItem("Dark", LocalizationManager.Get("theme_dark"), Color.FromArgb(17, 17, 21), ThemeManager.Accent),
+                new ThemeItem("Ocean", LocalizationManager.Get("theme_ocean"), Color.FromArgb(15, 23, 42), Color.FromArgb(56, 189, 248)),
+                new ThemeItem("Forest", LocalizationManager.Get("theme_forest"), Color.FromArgb(20, 26, 20), Color.FromArgb(74, 222, 128)),
+                new ThemeItem("Sunset", LocalizationManager.Get("theme_sunset"), Color.FromArgb(30, 20, 20), Color.FromArgb(251, 146, 60))
             };
 
             foreach (var theme in themes)
@@ -262,6 +262,24 @@ namespace SecureNotes
             }
 
             UpdatePreview();
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // SettingsForm
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "SettingsForm";
+            this.Load += new System.EventHandler(this.SettingsForm_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        private void SettingsForm_Load(object sender, EventArgs e)
+        {
+
         }
 
         private void CmbTheme_DrawItem(object sender, DrawItemEventArgs e)
