@@ -21,7 +21,7 @@ namespace SecureNotes
 
         private void InitializeModernUI()
         {
-            Text = "PIN для паролів";
+            Text = LocalizationManager.Get("pin_for_passwords");
             StartPosition = FormStartPosition.CenterParent;
             ClientSize = new Size(400, 280);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -33,7 +33,7 @@ namespace SecureNotes
 
             var lblTitle = new Label
             {
-                Text = "Введіть PIN-код",
+                Text = LocalizationManager.Get("enter_pin_code"),
                 Font = new Font("Segoe UI Semibold", 16f),
                 Location = new Point(padding, y),
                 AutoSize = true
@@ -43,7 +43,7 @@ namespace SecureNotes
 
             var lblSubtitle = new Label
             {
-                Text = "PIN потрібен для доступу до зашифрованих паролів",
+                Text = LocalizationManager.Get("pin_required"),
                 Font = new Font("Segoe UI", 9f),
                 ForeColor = ThemeManager.GetTextSecondary(Program.CurrentTheme),
                 Location = new Point(padding, y),
@@ -66,7 +66,7 @@ namespace SecureNotes
 
             btnOk = new Button
             {
-                Text = "Розблокувати",
+                Text = LocalizationManager.Get("unlock"),
                 Location = new Point(padding, y),
                 Size = new Size(165, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -77,7 +77,7 @@ namespace SecureNotes
 
             btnSetPin = new Button
             {
-                Text = string.IsNullOrEmpty(_user.PinHash) ? "Створити PIN" : "Змінити PIN",
+                Text = string.IsNullOrEmpty(_user.PinHash) ? LocalizationManager.Get("create_pin") : LocalizationManager.Get("change_pin"),
                 Location = new Point(padding + 175, y),
                 Size = new Size(165, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -104,7 +104,7 @@ namespace SecureNotes
             var pin = txtPin.Text.Trim();
             if (pin.Length < 4)
             {
-                MessageBox.Show("PIN має бути щонайменше 4 символи.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("pin_min_length"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -113,14 +113,14 @@ namespace SecureNotes
                 var oldHash = CryptoService.HashWithPBKDF2(pin, _user.PinSalt);
                 if (oldHash != _user.PinHash)
                 {
-                    MessageBox.Show("Невірний поточний PIN.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(LocalizationManager.Get("current_pin_invalid"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                var newPin = Prompt.Show("Введіть новий PIN:", "Новий PIN");
+                var newPin = Prompt.Show(LocalizationManager.Get("new_pin_prompt"), LocalizationManager.Get("new_pin"));
                 if (string.IsNullOrWhiteSpace(newPin) || newPin.Length < 4)
                 {
-                    MessageBox.Show("Новий PIN має бути щонайменше 4 символи.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(LocalizationManager.Get("new_pin_min_length"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -132,11 +132,11 @@ namespace SecureNotes
                     _db.UpdateUserPin(_user.Id, oldHash, newHash, newSalt);
                     _user.PinSalt = newSalt;
                     _user.PinHash = newHash;
-                    MessageBox.Show("PIN успішно змінено!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(LocalizationManager.Get("pin_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Не вдалося змінити PIN: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(LocalizationManager.Get("pin_change_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
@@ -149,11 +149,11 @@ namespace SecureNotes
                     _db.UpdateUserPin(_user.Id, "", newHash, newSalt);
                     _user.PinSalt = newSalt;
                     _user.PinHash = newHash;
-                    MessageBox.Show("PIN успішно створено!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show(LocalizationManager.Get("pin_created_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Не вдалося створити PIN: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(LocalizationManager.Get("pin_create_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error); ;
                 }
             }
         }
@@ -165,14 +165,14 @@ namespace SecureNotes
             var pin = txtPin.Text.Trim();
             if (string.IsNullOrEmpty(_user.PinHash) || string.IsNullOrEmpty(_user.PinSalt))
             {
-                MessageBox.Show("Спочатку встановіть PIN.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("set_pin_first"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             var hash = CryptoService.HashWithPBKDF2(pin, _user.PinSalt);
             if (hash != _user.PinHash)
             {
-                MessageBox.Show("Невірний PIN.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(LocalizationManager.Get("pin_invalid"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 

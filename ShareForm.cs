@@ -15,58 +15,76 @@ namespace SecureNotes
 
         public ShareForm()
         {
-            Text = "Спільні нотатки";
+            Text = LocalizationManager.Get("shared_notes");
             StartPosition = FormStartPosition.CenterParent;
             ClientSize = new Size(420, 260);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
 
-            lblYourCode = new Label { Text = "Ваш код: (ще не створено)", Location = new Point(16, 16), Width = 380 };
+            lblYourCode = new Label { Text = LocalizationManager.Get("your_code_not_created"), Location = new Point(16, 16), Width = 380 };
 
             txtGroupName = new TextBox { Location = new Point(16, 40), Width = 380 };
-            UIHelpers.SetPlaceholder(txtGroupName, "Назва групи (необов'язково)");
-
-            btnCreateGroup = new Button { Text = "Створити групу", Location = new Point(16, 72), Width = 380 };
+            UIHelpers.SetPlaceholder(txtGroupName, LocalizationManager.Get("optional_group_name"));
+            btnCreateGroup = new Button { Text = LocalizationManager.Get("create_group"), Location = new Point(16, 72), Width = 380 };
             btnCreateGroup.Click += (s, e) =>
             {
                 Program.TouchActivity();
 
                 var grp = _db.CreateGroup(Program.CurrentUser.Id,
                     string.IsNullOrWhiteSpace(txtGroupName.Text) || txtGroupName.ForeColor == Color.Gray
-                        ? "Моя група"
+                     ? LocalizationManager.Get("my_group")
                         : txtGroupName.Text.Trim());
 
                 _db.AddMember(grp.Id, Program.CurrentUser.Id, "edit");
-                lblYourCode.Text = $"Ваш код: {grp.InviteCode}";
-                MessageBox.Show("Групу створено. Поділися кодом з іншими.");
+                lblYourCode.Text = $"{LocalizationManager.Get("invite_code")}: {grp.InviteCode}";
+                MessageBox.Show(LocalizationManager.Get("group_created_share_code"));
             };
 
-            var lblJoin = new Label { Text = "Введіть код запрошення для приєднання", Location = new Point(16, 112), Width = 380 };
+            var lblJoin = new Label { Text = LocalizationManager.Get("enter_invite_code_to_join"), Location = new Point(16, 112), Width = 380 };
             txtInviteCode = new TextBox { Location = new Point(16, 132), Width = 380 };
-            UIHelpers.SetPlaceholder(txtInviteCode, "Код запрошення групи");
+            UIHelpers.SetPlaceholder(txtInviteCode, LocalizationManager.Get("group_invite_code_placeholder"));
 
-            btnJoinGroup = new Button { Text = "Приєднатися до групи", Location = new Point(16, 164), Width = 380 };
+            btnJoinGroup = new Button { Text = LocalizationManager.Get("join_group"), Location = new Point(16, 164), Width = 380 };
             btnJoinGroup.Click += (s, e) =>
             {
                 Program.TouchActivity();
 
                 var code = txtInviteCode.Text.Trim();
-                if (txtInviteCode.ForeColor == Color.Gray) code = ""; // якщо залишився плейсхолдер
+                if (txtInviteCode.ForeColor == Color.Gray) code = "";
+
 
                 var grp = _db.GetGroupByInvite(code);
                 if (grp == null)
                 {
-                    MessageBox.Show("Група не знайдена.");
+                    MessageBox.Show(LocalizationManager.Get("group_not_found"));
                     return;
                 }
                 _db.AddMember(grp.Id, Program.CurrentUser.Id, "edit");
-                MessageBox.Show("Ви приєдналися до групи. Перевірте вкладку «Спільні нотатки».");
+                MessageBox.Show(LocalizationManager.Get("joined_group_check_shared"));
             };
 
-            var btnClose = new Button { Text = "Закрити", Location = new Point(16, 204), Width = 380 };
+            var btnClose = new Button { Text = LocalizationManager.Get("close"), Location = new Point(16, 204), Width = 380 };
             btnClose.Click += (s, e) => Close();
 
             Controls.AddRange(new Control[] { lblYourCode, txtGroupName, btnCreateGroup, lblJoin, txtInviteCode, btnJoinGroup, btnClose });
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // ShareForm
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "ShareForm";
+            this.Load += new System.EventHandler(this.ShareForm_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        private void ShareForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -22,7 +22,7 @@ namespace SecureNotes
 
         private void InitializeModernUI()
         {
-            Text = "Змінити пароль";
+            Text = LocalizationManager.Get("change_password");
             StartPosition = FormStartPosition.CenterParent;
             ClientSize = new Size(420, 340);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -35,7 +35,7 @@ namespace SecureNotes
 
             var lblTitle = new Label
             {
-                Text = "Зміна пароля",
+                Text = LocalizationManager.Get("change_password"),
                 Font = new Font("Segoe UI Semibold", 16f),
                 Location = new Point(padding, y),
                 AutoSize = true
@@ -46,7 +46,7 @@ namespace SecureNotes
             // Current password
             var lblCurrent = new Label
             {
-                Text = "Поточний пароль",
+                Text = LocalizationManager.Get("current_password"),
                 Font = new Font("Segoe UI", 9.5f),
                 Location = new Point(padding, y),
                 AutoSize = true
@@ -67,7 +67,7 @@ namespace SecureNotes
             // New password
             var lblNew = new Label
             {
-                Text = "Новий пароль",
+                Text = LocalizationManager.Get("new_password"),
                 Font = new Font("Segoe UI", 9.5f),
                 Location = new Point(padding, y),
                 AutoSize = true
@@ -88,7 +88,7 @@ namespace SecureNotes
             // Confirm password
             var lblConfirm = new Label
             {
-                Text = "Підтвердіть новий пароль",
+                Text = LocalizationManager.Get("confirm_new_password"),
                 Font = new Font("Segoe UI", 9.5f),
                 Location = new Point(padding, y),
                 AutoSize = true
@@ -109,7 +109,7 @@ namespace SecureNotes
             // Buttons
             btnCancel = new Button
             {
-                Text = "Скасувати",
+                Text = LocalizationManager.Get("cancel"),
                 Location = new Point(padding, y),
                 Size = new Size((fieldWidth - 10) / 2, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -120,7 +120,7 @@ namespace SecureNotes
 
             btnSave = new Button
             {
-                Text = "Зберегти",
+                Text = LocalizationManager.Get("save"),
                 Location = new Point(padding + (fieldWidth - 10) / 2 + 10, y),
                 Size = new Size((fieldWidth - 10) / 2, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -148,19 +148,19 @@ namespace SecureNotes
 
             if (string.IsNullOrWhiteSpace(current) || string.IsNullOrWhiteSpace(newPw))
             {
-                MessageBox.Show("Заповніть всі поля.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("fill_required_fields"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (newPw.Length < 4)
             {
-                MessageBox.Show("Новий пароль має бути не менше 4 символів.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("password_min_length"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (newPw != confirm)
             {
-                MessageBox.Show("Паролі не співпадають.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("passwords_do_not_match"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -168,7 +168,7 @@ namespace SecureNotes
             var currentHash = CryptoService.HashWithPBKDF2(current, Program.CurrentUser.PasswordSalt);
             if (currentHash != Program.CurrentUser.PasswordHash)
             {
-                MessageBox.Show("Невірний поточний пароль.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(LocalizationManager.Get("current_password_incorrect"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -182,13 +182,31 @@ namespace SecureNotes
                 Program.CurrentUser.PasswordHash = newHash;
                 Program.CurrentUser.PasswordSalt = newSalt;
 
-                MessageBox.Show("Пароль успішно змінено!", "Успіх", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("password_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"{LocalizationManager.Get("password_change_failed")}{ex.Message}", LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // ChangePasswordForm
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "ChangePasswordForm";
+            this.Load += new System.EventHandler(this.ChangePasswordForm_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        private void ChangePasswordForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

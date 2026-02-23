@@ -19,7 +19,7 @@ namespace SecureNotes
 
         private void InitializeModernUI()
         {
-            Text = "Видалити акаунт";
+            Text = LocalizationManager.Get("delete_account");
             StartPosition = FormStartPosition.CenterParent;
             ClientSize = new Size(420, 260);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -31,7 +31,7 @@ namespace SecureNotes
 
             var lblTitle = new Label
             {
-                Text = "Видалення акаунту",
+                Text = LocalizationManager.Get("account_deletion"),
                 Font = new Font("Segoe UI Semibold", 16f),
                 ForeColor = ThemeManager.Danger,
                 Location = new Point(padding, y),
@@ -42,7 +42,7 @@ namespace SecureNotes
 
             var lblWarning = new Label
             {
-                Text = "Ця дія незворотна. Всі ваші нотатки та паролі\nбудуть видалені назавжди.",
+                Text = LocalizationManager.Get("irreversible_delete_warning"),
                 Font = new Font("Segoe UI", 9.5f),
                 Location = new Point(padding, y),
                 Size = new Size(360, 40),
@@ -53,7 +53,7 @@ namespace SecureNotes
 
             var lblPassword = new Label
             {
-                Text = "Введіть пароль для підтвердження:",
+                Text = LocalizationManager.Get("enter_password_confirm"),
                 Font = new Font("Segoe UI", 9.5f),
                 Location = new Point(padding, y),
                 AutoSize = true
@@ -73,7 +73,7 @@ namespace SecureNotes
 
             btnCancel = new Button
             {
-                Text = "Скасувати",
+                Text = LocalizationManager.Get("cancel"),
                 Location = new Point(padding, y),
                 Size = new Size(170, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -84,7 +84,7 @@ namespace SecureNotes
 
             btnDelete = new Button
             {
-                Text = "Видалити акаунт",
+                Text = LocalizationManager.Get("delete_account"),
                 Location = new Point(padding + 180, y),
                 Size = new Size(180, 44),
                 Font = new Font("Segoe UI Semibold", 10f),
@@ -112,13 +112,13 @@ namespace SecureNotes
             var hash = CryptoService.HashWithPBKDF2(pw, user.PasswordSalt);
             if (hash != user.PasswordHash)
             {
-                MessageBox.Show("Невірний пароль.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(LocalizationManager.Get("invalid_password"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
             var confirm = MessageBox.Show(
-                "Ви впевнені? Цю дію неможливо скасувати.",
-                "Підтвердження",
+                LocalizationManager.Get("are_you_sure_irreversible"),
+                LocalizationManager.Get("confirmation"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
             );
@@ -126,7 +126,7 @@ namespace SecureNotes
             if (confirm == DialogResult.Yes)
             {
                 _db.DeleteUser(user.Id);
-                MessageBox.Show("Акаунт успішно видалено.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("account_deleted_successfully"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Application.Exit();
             }
         }
