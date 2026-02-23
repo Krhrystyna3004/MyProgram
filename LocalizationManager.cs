@@ -296,6 +296,24 @@ namespace SecureNotes
                     [Language.Dutch] = "Kopieren",
                     [Language.Swedish] = "Kopiera"
                 },
+                ["warning"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Увага",
+                    [Language.English] = "Warning",
+                    [Language.Polish] = "Uwaga",
+                    [Language.German] = "Warnung",
+                    [Language.French] = "Attention",
+                    [Language.Spanish] = "Advertencia",
+                    [Language.Italian] = "Attenzione",
+                    [Language.Portuguese] = "Aviso",
+                    [Language.Czech] = "Upozorneni",
+                    [Language.Turkish] = "Uyari",
+                    [Language.Japanese] = "警告",
+                    [Language.Chinese] = "警告",
+                    [Language.Korean] = "경고",
+                    [Language.Dutch] = "Waarschuwing",
+                    [Language.Swedish] = "Varning"
+                },
                 ["search"] = new Dictionary<Language, string>
                 {
                     [Language.Ukrainian] = "Пошук...",
@@ -331,6 +349,24 @@ namespace SecureNotes
                     [Language.Korean] = "설정",
                     [Language.Dutch] = "Instellingen",
                     [Language.Swedish] = "Installningar"
+                },
+                ["logout_confirm"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Ви впевнені, що хочете вийти з акаунту?",
+                    [Language.English] = "Are you sure you want to log out?",
+                    [Language.Polish] = "Czy na pewno chcesz sie wylogowac?",
+                    [Language.German] = "Mochten Sie sich wirklich abmelden?",
+                    [Language.French] = "Voulez-vous vraiment vous deconnecter ?",
+                    [Language.Spanish] = "Seguro que quieres cerrar sesion?",
+                    [Language.Italian] = "Sei sicuro di voler uscire?",
+                    [Language.Portuguese] = "Tem certeza de que deseja sair?",
+                    [Language.Czech] = "Opravdu se chcete odhlasit?",
+                    [Language.Turkish] = "Cikis yapmak istediginize emin misiniz?",
+                    [Language.Japanese] = "本当にログアウトしますか？",
+                    [Language.Chinese] = "确定要退出登录吗？",
+                    [Language.Korean] = "로그아웃하시겠습니까?",
+                    [Language.Dutch] = "Weet je zeker dat je wilt uitloggen?",
+                    [Language.Swedish] = "Ar du saker pa att du vill logga ut?"
                 },
                 ["themes"] = new Dictionary<Language, string>
                 {

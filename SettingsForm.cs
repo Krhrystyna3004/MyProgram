@@ -17,6 +17,8 @@ namespace SecureNotes
         {
             InitializeModernUI();
             ThemeManager.Apply(this, Program.CurrentTheme);
+            LocalizationManager.LanguageChanged += ApplyLocalization;
+            FormClosed += (s, e) => LocalizationManager.LanguageChanged -= ApplyLocalization;
         }
 
         private void InitializeModernUI()
@@ -218,6 +220,7 @@ namespace SecureNotes
             if (cmbLanguage.SelectedItem is LanguageItem item)
             {
                 LocalizationManager.CurrentLanguage = item.Value;
+                Program.SaveCurrentPreferences();
                 ApplyLocalization();
 
                 UpdatePreview();
@@ -347,7 +350,7 @@ namespace SecureNotes
         private void BtnSwitchAccount_Click(object sender, EventArgs e)
         {
             var result = MessageBox.Show(
-                "Are you sure you want to log out?",
+                LocalizationManager.Get("logout_confirm"),
                  LocalizationManager.Get("change_account"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question

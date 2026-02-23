@@ -23,7 +23,7 @@ namespace SecureNotes
             do
             {
                 RestartRequested = false;
-                LoadSavedTheme();
+                LoadSavedPreferences();
 
                 User logged = null;
                 using (var login = new LoginForm())
@@ -47,7 +47,7 @@ namespace SecureNotes
                 LastActivity = DateTime.Now;
                 SessionKey = null;
 
-                Application.ApplicationExit += (s, e) => SaveCurrentTheme();
+                Application.ApplicationExit += (s, e) => SaveCurrentPreferences();
 
                 using (var mainForm = new MainForm())
                 {
@@ -67,7 +67,7 @@ namespace SecureNotes
             LastActivity = DateTime.Now;
         }
 
-        private static void LoadSavedTheme()
+        private static void LoadSavedPreferences()
         {
             try
             {
@@ -80,7 +80,14 @@ namespace SecureNotes
                         {
                             var themeName = line.Substring(6).Trim();
                             CurrentTheme = ThemeManager.FromString(themeName);
-                            break;
+                        }
+                        else if (line.StartsWith("Language="))
+                        {
+                            var languageName = line.Substring(9).Trim();
+                            if (Enum.TryParse(languageName, out Language language))
+                            {
+                                LocalizationManager.CurrentLanguage = language;
+                            }
                         }
                     }
                 }
@@ -88,13 +95,19 @@ namespace SecureNotes
             catch { }
         }
 
-        public static void SaveCurrentTheme()
+        public static void SaveCurrentPreferences()
         {
             try
             {
                 var dir = Path.GetDirectoryName(SettingsPath);
                 if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                File.WriteAllText(SettingsPath, $"Theme={ThemeManager.GetThemeName(CurrentTheme)}");
+                var lines = new[]
+               {
+                    $"Theme={ThemeManager.GetThemeName(CurrentTheme)}",
+                    $"Language={LocalizationManager.CurrentLanguage}"
+                };
+
+                File.WriteAllLines(SettingsPath, lines);
             }
             catch { }
         }
