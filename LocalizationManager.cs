@@ -26,6 +26,8 @@ namespace SecureNotes
     public static class LocalizationManager
     {
         private static Language _currentLanguage = Language.Ukrainian;
+        private static readonly Language[] AllLanguages = (Language[])Enum.GetValues(typeof(Language));
+
 
         public static event Action LanguageChanged;
 
@@ -854,6 +856,66 @@ namespace SecureNotes
                     [Language.Korean] = "선셋",
                     [Language.Dutch] = "Zonsondergang",
                     [Language.Swedish] = "Solnedgang"
+                },
+                ["select_group_first"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Спочатку оберіть групу.",
+                    [Language.English] = "Please select a group first."
+                },
+                ["file_copy_failed"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Не вдалося скопіювати файл: ",
+                    [Language.English] = "Failed to copy file: "
+                },
+                ["select_text_to_highlight"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Виділіть текст для виділення кольором.",
+                    [Language.English] = "Select text to apply highlighting."
+                },
+                ["select_text_to_change_color"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Виділіть текст для зміни кольору.",
+                    [Language.English] = "Select text to change text color."
+                },
+                ["attach_file_dialog_title"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Прикріпити файл",
+                    [Language.English] = "Attach file"
+                },
+                ["file_not_found"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Файл не знайдено.",
+                    [Language.English] = "File not found."
+                },
+                ["open_image_failed"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Не вдалося відкрити зображення: ",
+                    [Language.English] = "Failed to open image: "
+                },
+                ["open_file_failed"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Не вдалося відкрити файл: ",
+                    [Language.English] = "Failed to open file: "
+                },
+                ["decrypt_failed_placeholder"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "(не вдалося розшифрувати)",
+                    [Language.English] = "(failed to decrypt)"
+                },
+                ["enter_title"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Введіть заголовок.",
+                    [Language.English] = "Enter a title."
+                },
+                ["select_group_for_shared_note"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Оберіть групу для спільної нотатки.",
+                    [Language.English] = "Select a group for the shared note."
+                },
+                ["unlock_passwords_tab_first"] = new Dictionary<Language, string>
+                {
+                    [Language.Ukrainian] = "Спочатку розблокуйте вкладку Паролі (PIN).",
+                    [Language.English] = "Unlock the Passwords tab first (PIN)."
                 },
                 ["pink"] = new Dictionary<Language, string>
                 {
@@ -1897,7 +1959,30 @@ namespace SecureNotes
                     [Language.English] = "You joined the group. Check the Shared Notes tab."
                 },
             };
-  
+        static LocalizationManager()
+        {
+            EnsureTranslationsForAllLanguages();
+        }
+
+        private static void EnsureTranslationsForAllLanguages()
+        {
+            foreach (var pair in Translations)
+            {
+                var langDict = pair.Value;
+                langDict.TryGetValue(Language.English, out var englishText);
+                langDict.TryGetValue(Language.Ukrainian, out var ukrainianText);
+
+                var fallback = englishText ?? ukrainianText ?? pair.Key;
+
+                foreach (var language in AllLanguages)
+                {
+                    if (!langDict.ContainsKey(language))
+                    {
+                        langDict[language] = fallback;
+                    }
+                }
+            }
+        }
 
         public static string Get(string key)
         {

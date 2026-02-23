@@ -582,7 +582,7 @@ namespace SecureNotes
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося скопіювати файл: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(LocalizationManager.Get("file_copy_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return sourcePath;
             }
         }
@@ -659,7 +659,7 @@ namespace SecureNotes
         {
             if (rtbContent.SelectionLength == 0)
             {
-                MessageBox.Show("Виділіть текст для виділення кольором.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("select_text_to_highlight"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -687,7 +687,7 @@ namespace SecureNotes
         {
             if (rtbContent.SelectionLength == 0)
             {
-                MessageBox.Show("Виділіть текст для зміни кольору.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("select_text_to_change_color"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -739,7 +739,7 @@ namespace SecureNotes
         {
             using (var openDialog = new OpenFileDialog())
             {
-                openDialog.Title = "Прикріпити файл";
+                openDialog.Title = LocalizationManager.Get("attach_file_dialog_title");
                 openDialog.Filter = "Всі файли|*.*|" +
                                    "Зображення|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp;*.ico|" +
                                    "Документи|*.pdf;*.doc;*.docx;*.txt;*.xls;*.xlsx;*.ppt;*.pptx;*.odt;*.ods|" +
@@ -979,7 +979,7 @@ namespace SecureNotes
             {
                 if (!File.Exists(filePath))
                 {
-                    MessageBox.Show("Файл не знайдено.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(LocalizationManager.Get("file_not_found"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -1010,7 +1010,7 @@ namespace SecureNotes
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося відкрити зображення: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(LocalizationManager.Get("open_image_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1028,12 +1028,12 @@ namespace SecureNotes
                 }
                 else
                 {
-                    MessageBox.Show("Файл не знайдено.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(LocalizationManager.Get("file_not_found"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не вдалося відкрити файл: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(LocalizationManager.Get("open_file_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1049,7 +1049,7 @@ namespace SecureNotes
                     }
                     catch
                     {
-                        rtbContent.Text = "(не вдалося розшифрувати)";
+                        rtbContent.Text = LocalizationManager.Get("decrypt_failed_placeholder");
                     }
                 }
                 else
@@ -1156,7 +1156,7 @@ namespace SecureNotes
 
             if (string.IsNullOrWhiteSpace(title))
             {
-                MessageBox.Show("Введіть заголовок.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("enter_title"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -1166,7 +1166,7 @@ namespace SecureNotes
                 if (cmbGroup.SelectedItem is Group g) groupId = g.Id;
                 else
                 {
-                    MessageBox.Show("Оберіть групу для спільної нотатки.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(LocalizationManager.Get("select_group_for_shared_note"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning); MessageBox.Show("Оберіть групу для спільної нотатки.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
             }
@@ -1190,7 +1190,7 @@ namespace SecureNotes
                 {
                     if (Program.SessionKey == null)
                     {
-                        MessageBox.Show("Спочатку розблокуйте вкладку Паролі (PIN).", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show(LocalizationManager.Get("unlock_passwords_tab_first"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
                     var enc = CryptoService.EncryptAes(content, Program.SessionKey);
@@ -1219,12 +1219,12 @@ namespace SecureNotes
 
                 if (type == "password")
                 {
-                    var isMasked = content.StartsWith("**") || content.StartsWith("(не вдалося");
+                    var isMasked = content.StartsWith("**") || content.StartsWith(LocalizationManager.Get("decrypt_failed_placeholder"));
                     if (!isMasked && !string.IsNullOrWhiteSpace(content))
                     {
                         if (Program.SessionKey == null)
                         {
-                            MessageBox.Show("Спочатку розблокуйте вкладку Паролі (PIN).", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            MessageBox.Show(LocalizationManager.Get("unlock_passwords_tab_first"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
                         var enc = CryptoService.EncryptAes(content, Program.SessionKey);

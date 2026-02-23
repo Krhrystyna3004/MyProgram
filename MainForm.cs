@@ -481,11 +481,11 @@ namespace SecureNotes
         {
             switch (Program.CurrentTheme)
             {
-                case Theme.Dark: btnThemeToggle.Text = "Темна"; break;
-                case Theme.Ocean: btnThemeToggle.Text = "Океан"; break;
-                case Theme.Forest: btnThemeToggle.Text = "Ліс"; break;
-                case Theme.Sunset: btnThemeToggle.Text = "Захід"; break;
-                default: btnThemeToggle.Text = "Світла"; break;
+                case Theme.Dark: btnThemeToggle.Text = LocalizationManager.Get("dark"); break;
+                case Theme.Ocean: btnThemeToggle.Text = LocalizationManager.Get("ocean"); break;
+                case Theme.Forest: btnThemeToggle.Text = LocalizationManager.Get("forest"); break;
+                case Theme.Sunset: btnThemeToggle.Text = LocalizationManager.Get("sunset"); break;
+                default: btnThemeToggle.Text = LocalizationManager.Get("light"); break;
             }
         }
 
@@ -499,7 +499,7 @@ namespace SecureNotes
             menu.ForeColor = ThemeManager.GetTextColor(Program.CurrentTheme);
 
             var themes = new string[] { "Light", "Dark", "Ocean", "Forest", "Sunset" };
-            var themeNames = new string[] { "Світла", "Темна", "Океан", "Ліс", "Захід сонця" };
+            var themeNames = new string[] { LocalizationManager.Get("light"), LocalizationManager.Get("dark"), LocalizationManager.Get("ocean"), LocalizationManager.Get("forest"), LocalizationManager.Get("sunset") };
 
             for (int i = 0; i < themes.Length; i++)
             {
@@ -605,8 +605,8 @@ namespace SecureNotes
             if (grp == null) return;
 
             var result = MessageBox.Show(
-                "Видалити групу \"" + grp.Name + "\"?\nВсі нотатки групи будуть видалені!",
-                "Видалення групи",
+                LocalizationManager.Get("leave_group_confirm") + " \"" + grp.Name + "\"?",
+                LocalizationManager.Get("leave_group"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning
             );
@@ -622,7 +622,7 @@ namespace SecureNotes
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Помилка: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"{LocalizationManager.Get("error")}: {ex.Message}", LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -636,8 +636,8 @@ namespace SecureNotes
             if (grp == null) return;
 
             var result = MessageBox.Show(
-                "Покинути групу \"" + grp.Name + "\"?",
-                "Покинути групу",
+                LocalizationManager.Get("delete_group_confirm") + " \"" + grp.Name + "\"?\n" + LocalizationManager.Get("delete_group_irreversible"),
+                LocalizationManager.Get("delete_group"),
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question
             );
@@ -653,7 +653,7 @@ namespace SecureNotes
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Помилка: " + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"{LocalizationManager.Get("error")}: {ex.Message}", LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -722,7 +722,7 @@ namespace SecureNotes
 
             if (!_selectedGroupId.HasValue)
             {
-                MessageBox.Show("Оберіть групу.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("select_group_first"), LocalizationManager.Get("info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -745,7 +745,8 @@ namespace SecureNotes
             var name = UIHelpers.IsPlaceholder(txtSharedGroupName) ? "" : txtSharedGroupName.Text.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                MessageBox.Show("Введіть назву групи.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var code = UIHelpers.IsPlaceholder(txtSharedJoinCode) ? "" : txtSharedJoinCode.Text.Trim();
+                if (string.IsNullOrEmpty(code)) MessageBox.Show(LocalizationManager.Get("enter_group_name"), LocalizationManager.Get("info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -766,14 +767,14 @@ namespace SecureNotes
             var code = UIHelpers.IsPlaceholder(txtSharedJoinCode) ? "" : txtSharedJoinCode.Text.Trim();
             if (string.IsNullOrEmpty(code))
             {
-                MessageBox.Show("Введіть код запрошення.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(LocalizationManager.Get("enter_invite_code_to_join"), LocalizationManager.Get("info"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             var group = _db.GetGroupByInvite(code);
             if (group == null)
             {
-                MessageBox.Show("Групу з таким кодом не знайдено.", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(LocalizationManager.Get("group_not_found"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
