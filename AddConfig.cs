@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Configuration;
 
 namespace SecureNotes
 {
@@ -8,17 +9,28 @@ namespace SecureNotes
         {
             get
             {
+                var config = new ConfigurationBuilder()
+                  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                  .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
+                  .AddEnvironmentVariables()
+                  .Build();
+
+                var fullConnectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING");
+                if (!string.IsNullOrWhiteSpace(fullConnectionString))
+                {
+                    return fullConnectionString;
+                }
+
+                var connectionString = config.GetConnectionString("DefaultConnection");
+                if (string.IsNullOrWhiteSpace(connectionString))
+                    throw new Exception("ConnectionStrings:DefaultConnection is not set.");
+
                 var password = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
                 if (string.IsNullOrEmpty(password))
                     throw new Exception("DB_PASSWORD environment variable not set.");
 
-                return $"Server=securenotes1-khrystynanovak3004-69ca.c.aivencloud.com;" +
-                       $"Port=13671;" +
-                       $"Database=defaultdb;" +
-                       $"Uid=avnadmin;" +
-                       $"Password={password};" +
-                       $"SslMode=Required;";
+                return connectionString.Replace("${DB_PASSWORD}", password);
             }
         }
     }

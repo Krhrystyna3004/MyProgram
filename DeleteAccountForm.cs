@@ -9,7 +9,7 @@ namespace SecureNotes
         private TextBox txtPassword;
         private Button btnDelete;
         private Button btnCancel;
-        private DatabaseHelper _db = new DatabaseHelper(AppConfig.ConnStr);
+        private readonly UserAccountService _accountService = new UserAccountService();
 
         public DeleteAccountForm()
         {
@@ -125,7 +125,7 @@ namespace SecureNotes
 
             if (confirm == DialogResult.Yes)
             {
-                _db.DeleteUser(user.Id);
+                _accountService.DeleteAccount(user.Id);
                 MessageBox.Show(LocalizationManager.Get("account_deleted_successfully"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Application.Exit();
             }

@@ -12,7 +12,7 @@ namespace SecureNotes
         private TextBox txtConfirmPassword;
         private Button btnSave;
         private Button btnCancel;
-        private readonly DatabaseHelper _db = new DatabaseHelper(AppConfig.ConnStr);
+        private readonly UserAccountService _accountService = new UserAccountService();
 
         public ChangePasswordForm()
         {
@@ -178,7 +178,7 @@ namespace SecureNotes
 
             try
             {
-                _db.UpdateUserPassword(Program.CurrentUser.Id, newHash, newSalt);
+                _accountService.UpdatePassword(Program.CurrentUser.Id, newHash, newSalt);
                 Program.CurrentUser.PasswordHash = newHash;
                 Program.CurrentUser.PasswordSalt = newSalt;
 

@@ -6,7 +6,7 @@ namespace SecureNotes
 {
     public partial class SettingsForm : Form
     {
-        private readonly DatabaseHelper _db = new DatabaseHelper(AppConfig.ConnStr);
+        private readonly UserAccountService _accountService = new UserAccountService();
 
         private ComboBox cmbTheme, cmbLanguage;
         private Panel previewPanel;
@@ -415,7 +415,7 @@ namespace SecureNotes
 
                 try
                 {
-                    _db.UpdateUserTheme(Program.CurrentUser.Id, item.Value);
+                    _accountService.UpdateTheme(Program.CurrentUser.Id, item.Value);
                 }
                 catch { }
             }

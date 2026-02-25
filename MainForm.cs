@@ -8,7 +8,10 @@ namespace SecureNotes
 {
     public partial class MainForm : Form
     {
-        private readonly DatabaseHelper _db = new DatabaseHelper(AppConfig.ConnStr);
+        private readonly UserAccountService _accountService = new UserAccountService();
+        private readonly NoteSyncService _noteSyncService = new NoteSyncService();
+        private readonly GroupSyncService _groupSyncService = new GroupSyncService();
+
 
         private List<Note> _allNotes = new List<Note>();
         private List<Group> _myGroups = new List<Group>();
@@ -516,7 +519,7 @@ namespace SecureNotes
                     Program.CurrentTheme = ThemeManager.FromString(themeName);
                     Program.CurrentUser.PreferredTheme = themeName;
 
-                    try { _db.UpdateUserTheme(Program.CurrentUser.Id, themeName); } catch { }
+                    try { _accountService.UpdateTheme(Program.CurrentUser.Id, themeName); } catch { }
 
                     ThemeManager.Apply(this, Program.CurrentTheme);
                     ApplyThemeToCustomControls();
@@ -615,7 +618,7 @@ namespace SecureNotes
             {
                 try
                 {
-                    _db.DeleteGroup(grp.Id, Program.CurrentUser.Id);
+                    _groupSyncService.DeleteGroup(grp.Id, Program.CurrentUser.Id);
                     _selectedGroupId = null;
                     LoadGroups();
                     RenderCurrentTab();
@@ -646,7 +649,7 @@ namespace SecureNotes
             {
                 try
                 {
-                    _db.LeaveGroup(grp.Id, Program.CurrentUser.Id);
+                    _groupSyncService.LeaveGroup(grp.Id, Program.CurrentUser.Id);
                     _selectedGroupId = null;
                     LoadGroups();
                     RenderCurrentTab();
@@ -694,7 +697,7 @@ namespace SecureNotes
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
                     var note = form.CreatedOrUpdatedNote;
-                    note.Id = _db.AddNote(note);
+                    note.Id = _noteSyncService.AddNote(note);
                     LoadNotes();
 
                     if (note.GroupId.HasValue)
@@ -731,7 +734,7 @@ namespace SecureNotes
                 if (form.ShowDialog(this) == DialogResult.OK)
                 {
                     var note = form.CreatedOrUpdatedNote;
-                    note.Id = _db.AddNote(note);
+                    note.Id = _noteSyncService.AddNote(note);
                     LoadNotes();
                     RenderSharedCards();
                 }
@@ -750,7 +753,7 @@ namespace SecureNotes
                 return;
             }
 
-            var group = _db.CreateGroup(Program.CurrentUser.Id, name);
+            var group = _groupSyncService.CreateGroup(Program.CurrentUser.Id, name);
             LoadGroups();
             _selectedGroupId = group.Id;
             SelectGroupById(_selectedGroupId);
@@ -758,6 +761,24 @@ namespace SecureNotes
 
             txtSharedGroupName.Text = "";
             UIHelpers.SetPlaceholder(txtSharedGroupName, LocalizationManager.Get("group_name"));
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // MainForm
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "MainForm";
+            this.Load += new System.EventHandler(this.MainForm_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
         }
 
         private void BtnSharedJoinGroup_Click(object sender, EventArgs e)
@@ -771,14 +792,14 @@ namespace SecureNotes
                 return;
             }
 
-            var group = _db.GetGroupByInvite(code);
+            var group = _groupSyncService.GetGroupByInvite(code);
             if (group == null)
             {
                 MessageBox.Show(LocalizationManager.Get("group_not_found"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            _db.AddMember(group.Id, Program.CurrentUser.Id);
+            _groupSyncService.AddMember(group.Id, Program.CurrentUser.Id);
             LoadGroups();
             _selectedGroupId = group.Id;
             SelectGroupById(_selectedGroupId);
@@ -915,7 +936,7 @@ namespace SecureNotes
                 return;
             }
 
-            var notes = _db.GetNotesForGroup(_selectedGroupId.Value).Where(TagMatches).Where(TextMatches);
+            var notes = _noteSyncService.GetNotesForGroup(_selectedGroupId.Value).Where(TagMatches).Where(TextMatches);
 
             foreach (var note in notes)
             {
@@ -934,7 +955,7 @@ namespace SecureNotes
         {
             if (MessageBox.Show(LocalizationManager.Get("delete") + "?", LocalizationManager.Get("warning"), MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                _db.DeleteNote(noteId);
+                _noteSyncService.DeleteNote(noteId);
                 LoadNotes();
                 RenderCurrentTab();
             }
@@ -942,13 +963,13 @@ namespace SecureNotes
 
         private void Card_EditRequested(object sender, int noteId)
         {
-            var n = _db.GetNoteById(noteId);
+            var n = _noteSyncService.GetNoteById(noteId);
             using (var modal = new CreateNoteForm(n.Type, n, _myGroups, n.GroupId))
             {
                 if (modal.ShowDialog(this) == DialogResult.OK)
                 {
                     var updated = modal.CreatedOrUpdatedNote;
-                    _db.UpdateNote(updated);
+                    _noteSyncService.UpdateNote(updated);
                     LoadNotes();
 
                     if (updated.GroupId.HasValue)
@@ -972,7 +993,8 @@ namespace SecureNotes
 
         private void LoadNotes()
         {
-            _allNotes = _db.GetNotesForUser(Program.CurrentUser.Id);
+            _allNotes = _noteSyncService.GetNotesForUser(Program.CurrentUser.Id);
+
 
             var tags = _allNotes
                 .SelectMany(n => (n.Tags ?? "").Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
@@ -990,7 +1012,7 @@ namespace SecureNotes
 
         private void LoadGroups()
         {
-            _myGroups = _db.GetGroupsForUser(Program.CurrentUser.Id);
+            _myGroups = _groupSyncService.GetGroupsForUser(Program.CurrentUser.Id);
             lstGroups.Items.Clear();
             foreach (var g in _myGroups) lstGroups.Items.Add(g);
             lstGroups.DisplayMember = "Name";

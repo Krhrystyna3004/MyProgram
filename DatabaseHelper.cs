@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using MySql.Data.MySqlClient;
-using Microsoft.Extensions.Configuration;
+
 
 namespace SecureNotes
 {
     public class DatabaseHelper
     {
         private readonly string _cs;
-
-        // Конструктор без параметрів: бере рядок підключення з appsettings.json + змінних середовища
+        // Конструктор без параметрів: бере рядок підключення з AppConfig
         public DatabaseHelper()
         {
-            var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-            _cs = config.GetConnectionString("DefaultConnection");
+            _cs = AppConfig.ConnStr;
         }
 
         // Конструктор з параметром: можна передати рядок вручну

@@ -14,7 +14,7 @@ namespace SecureNotes
         private Label lblTitle;
         private Label lblSubtitle;
         private Panel cardPanel;
-        private DatabaseHelper _db = new DatabaseHelper(AppConfig.ConnStr);
+        private readonly ApiClient _api = new ApiClient("http://localhost:5077");
 
         public User LoggedInUser { get; private set; }
 
@@ -176,27 +176,23 @@ namespace SecureNotes
                 return;
             }
 
-            var salt = CryptoService.GenerateSalt();
-            var hash = CryptoService.HashWithPBKDF2(pw, salt);
-
-            var user = new User
-            {
-                Username = un,
-                PasswordSalt = salt,
-                PasswordHash = hash,
-                PreferredTheme = "Dark"
-            };
-
             try
             {
-                user.Id = _db.CreateUser(user);
-                LoggedInUser = user;
+                var auth = _api.Register(un, pw);
+                SessionStore.AccessToken = auth.AccessToken;
+                LoggedInUser = new User
+                {
+                    Id = auth.UserId,
+                    Username = auth.Username,
+                    PreferredTheme = "Dark"
+                };
+
                 DialogResult = DialogResult.OK;
                 Close();
             }
             catch (Exception ex)
             {
-                ShowError(LocalizationManager.Get("user_exists_or_db_error"));
+                ShowError("API register error: " + ex.Message);
             }
         }
 
@@ -205,28 +201,53 @@ namespace SecureNotes
             var un = txtUsername.Text.Trim();
             var pw = txtPassword.Text;
 
-            var user = _db.GetUserByUsername(un);
-            if (user == null)
+            if (string.IsNullOrWhiteSpace(un) || string.IsNullOrWhiteSpace(pw))
             {
-                ShowError(LocalizationManager.Get("user_not_found"));
+                ShowError(LocalizationManager.Get("enter_login_and_password"));
                 return;
             }
 
-            var hash = CryptoService.HashWithPBKDF2(pw, user.PasswordSalt);
-            if (hash != user.PasswordHash)
+            try
             {
-                ShowError(LocalizationManager.Get("invalid_password"));
-                return;
-            }
+                var auth = _api.Login(un, pw);
+                SessionStore.AccessToken = auth.AccessToken;
+                LoggedInUser = new User
+                {
+                    Id = auth.UserId,
+                    Username = auth.Username,
+                    PreferredTheme = "Dark"
+                };
 
-            LoggedInUser = user;
-            DialogResult = DialogResult.OK;
-            Close();
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+            catch (Exception ex)
+            {
+                ShowError("API login error: " + ex.Message);
+            }
         }
 
         private void ShowError(string message)
         {
             MessageBox.Show(message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // LoginForm
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "LoginForm";
+            this.Load += new System.EventHandler(this.LoginForm_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
