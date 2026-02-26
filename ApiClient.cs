@@ -131,11 +131,11 @@ namespace SecureNotes
         public void ChangePin(string oldPin, string newPin)
             => SendNoContent(HttpMethod.Post, "api/pin/change", new { oldPin, newPin });
 
+        public VerifyPinResult VerifyPinDetailed(string pin)
+            => Send<VerifyPinResult>(HttpMethod.Post, "api/pin/verify", new { pin });
+
         public bool VerifyPin(string pin)
-        {
-            var result = Send<VerifyPinResult>(HttpMethod.Post, "api/pin/verify", new { pin });
-            return result?.IsValid == true;
-        }
+            => VerifyPinDetailed(pin)?.IsValid == true;
 
         // ---------- INTERNAL HELPERS ----------
         private T Send<T>(HttpMethod method, string url, object payload = null)
@@ -195,6 +195,8 @@ namespace SecureNotes
     public class VerifyPinResult
     {
         public bool IsValid { get; set; }
+        public bool IsSet { get; set; }
+        public string PinSalt { get; set; }
     }
 
     public class IdResponse

@@ -792,14 +792,13 @@ namespace SecureNotes
                 return;
             }
 
-            var group = _groupSyncService.GetGroupByInvite(code);
+            var group = _groupSyncService.JoinGroupByInvite(code);
             if (group == null)
             {
                 MessageBox.Show(LocalizationManager.Get("group_not_found"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            _groupSyncService.AddMember(group.Id, Program.CurrentUser.Id);
             LoadGroups();
             _selectedGroupId = group.Id;
             SelectGroupById(_selectedGroupId);

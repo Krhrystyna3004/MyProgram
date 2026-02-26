@@ -14,7 +14,7 @@ namespace SecureNotes
         private Label lblTitle;
         private Label lblSubtitle;
         private Panel cardPanel;
-        private readonly ApiClient _api = new ApiClient("http://localhost:5077");
+        private readonly ApiClient _api = new ApiClient(ApiConfig.BaseUrl);
 
         public User LoggedInUser { get; private set; }
 
@@ -180,12 +180,16 @@ namespace SecureNotes
             {
                 var auth = _api.Register(un, pw);
                 SessionStore.AccessToken = auth.AccessToken;
-                LoggedInUser = new User
+                var localUser = TryLoadLocalUser(auth.Username);
+                LoggedInUser = localUser ?? new User
                 {
                     Id = auth.UserId,
                     Username = auth.Username,
                     PreferredTheme = "Dark"
                 };
+
+                LoggedInUser.Id = auth.UserId;
+                LoggedInUser.Username = auth.Username;
 
                 DialogResult = DialogResult.OK;
                 Close();
@@ -211,12 +215,16 @@ namespace SecureNotes
             {
                 var auth = _api.Login(un, pw);
                 SessionStore.AccessToken = auth.AccessToken;
-                LoggedInUser = new User
+                var localUser = TryLoadLocalUser(auth.Username);
+                LoggedInUser = localUser ?? new User
                 {
                     Id = auth.UserId,
                     Username = auth.Username,
                     PreferredTheme = "Dark"
                 };
+
+                LoggedInUser.Id = auth.UserId;
+                LoggedInUser.Username = auth.Username;
 
                 DialogResult = DialogResult.OK;
                 Close();
@@ -224,6 +232,18 @@ namespace SecureNotes
             catch (Exception ex)
             {
                 ShowError("API login error: " + ex.Message);
+            }
+        }
+        private User TryLoadLocalUser(string username)
+        {
+            try
+            {
+                var db = new DatabaseHelper(AppConfig.ConnStr);
+                return db.GetUserByUsername(username);
+            }
+            catch
+            {
+                return null;
             }
         }
 

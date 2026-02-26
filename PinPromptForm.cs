@@ -9,12 +9,26 @@ namespace SecureNotes
         private TextBox txtPin;
         private Button btnOk;
         private Button btnSetPin;
-        private readonly DatabaseHelper _db = new DatabaseHelper(AppConfig.ConnStr);
+        private DatabaseHelper _db;
         private readonly User _user;
+
+        private DatabaseHelper Db
+        {
+            get
+            {
+                if (_db == null)
+                {
+                    _db = new DatabaseHelper(AppConfig.ConnStr);
+                }
+
+                return _db;
+            }
+        }
 
         public PinPromptForm(User user)
         {
             _user = user;
+            TryHydrateUserPinData();
             InitializeModernUI();
             ThemeManager.Apply(this, Program.CurrentTheme);
         }
@@ -97,6 +111,76 @@ namespace SecureNotes
             this.AcceptButton = btnOk;
         }
 
+        private void TryHydrateUserPinData()
+        {
+            if (_user == null || !string.IsNullOrWhiteSpace(_user.PinSalt))
+            {
+                return;
+            }
+
+            try
+            {
+                var fromDb = Db.GetUserByUsername(_user.Username);
+                if (fromDb != null)
+                {
+                    _user.PinHash = fromDb.PinHash;
+                    _user.PinSalt = fromDb.PinSalt;
+                }
+            }
+            catch
+            {
+                // ignore hydration failures
+            }
+        }
+
+        private ApiClient CreateApiClient()
+        {
+            if (string.IsNullOrWhiteSpace(ApiConfig.BaseUrl) || string.IsNullOrWhiteSpace(SessionStore.AccessToken))
+            {
+                return null;
+            }
+
+            var api = new ApiClient(ApiConfig.BaseUrl);
+            api.SetAccessToken(SessionStore.AccessToken);
+            return api;
+        }
+
+        private void ApplyPinData(string pin, string pinSalt)
+        {
+            if (string.IsNullOrWhiteSpace(pinSalt))
+            {
+                return;
+            }
+
+            _user.PinSalt = pinSalt;
+            _user.PinHash = CryptoService.HashWithPBKDF2(pin, pinSalt);
+        }
+
+        private bool TryRefreshPinDataFromApi(string pin)
+        {
+            try
+            {
+                var api = CreateApiClient();
+                if (api == null)
+                {
+                    return false;
+                }
+
+                var verify = api.VerifyPinDetailed(pin);
+                if (verify?.IsValid == true && !string.IsNullOrWhiteSpace(verify.PinSalt))
+                {
+                    ApplyPinData(pin, verify.PinSalt);
+                    return true;
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return false;
+        }
+
         private void BtnSetPin_Click(object sender, EventArgs e)
         {
             Program.TouchActivity();
@@ -108,6 +192,39 @@ namespace SecureNotes
                 return;
             }
 
+            try
+            {
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    if (!string.IsNullOrEmpty(_user.PinHash) && !string.IsNullOrEmpty(_user.PinSalt))
+                    {
+                        var newPin = Prompt.Show(LocalizationManager.Get("new_pin_prompt"), LocalizationManager.Get("new_pin"));
+                        if (string.IsNullOrWhiteSpace(newPin) || newPin.Length < 4)
+                        {
+                            MessageBox.Show(LocalizationManager.Get("new_pin_min_length"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+
+                        api.ChangePin(pin, newPin);
+                        TryRefreshPinDataFromApi(newPin);
+                        MessageBox.Show(LocalizationManager.Get("pin_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
+
+                    api.SetPin(pin);
+                    TryRefreshPinDataFromApi(pin);
+                    MessageBox.Show(LocalizationManager.Get("pin_created_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(LocalizationManager.Get("pin_change_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // DB fallback
             if (!string.IsNullOrEmpty(_user.PinHash) && !string.IsNullOrEmpty(_user.PinSalt))
             {
                 var oldHash = CryptoService.HashWithPBKDF2(pin, _user.PinSalt);
@@ -129,7 +246,7 @@ namespace SecureNotes
 
                 try
                 {
-                    _db.UpdateUserPin(_user.Id, oldHash, newHash, newSalt);
+                    Db.UpdateUserPin(_user.Id, oldHash, newHash, newSalt);
                     _user.PinSalt = newSalt;
                     _user.PinHash = newHash;
                     MessageBox.Show(LocalizationManager.Get("pin_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -146,14 +263,14 @@ namespace SecureNotes
 
                 try
                 {
-                    _db.UpdateUserPin(_user.Id, "", newHash, newSalt);
+                    Db.UpdateUserPin(_user.Id, string.Empty, newHash, newSalt);
                     _user.PinSalt = newSalt;
                     _user.PinHash = newHash;
                     MessageBox.Show(LocalizationManager.Get("pin_created_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(LocalizationManager.Get("pin_create_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error); ;
+                    MessageBox.Show(LocalizationManager.Get("pin_create_failed") + ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -163,6 +280,49 @@ namespace SecureNotes
             Program.TouchActivity();
 
             var pin = txtPin.Text.Trim();
+
+            try
+            {
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    var verify = api.VerifyPinDetailed(pin);
+                    if (verify == null || !verify.IsSet)
+                    {
+                        MessageBox.Show(LocalizationManager.Get("set_pin_first"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    if (!verify.IsValid)
+                    {
+                        MessageBox.Show(LocalizationManager.Get("pin_invalid"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(verify.PinSalt))
+                    {
+                        ApplyPinData(pin, verify.PinSalt);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_user.PinSalt))
+                    {
+                        MessageBox.Show(LocalizationManager.Get("pin_invalid"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+
+                    Program.SessionKey = CryptoService.DeriveKeyFromPin(pin, _user.PinSalt);
+                    DialogResult = DialogResult.OK;
+                    Close();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // DB fallback
             if (string.IsNullOrEmpty(_user.PinHash) || string.IsNullOrEmpty(_user.PinSalt))
             {
                 MessageBox.Show(LocalizationManager.Get("set_pin_first"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -212,4 +372,3 @@ namespace SecureNotes
         }
     }
 }
-

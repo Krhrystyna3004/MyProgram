@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Web.Script.Serialization;
-using Microsoft.Extensions.Configuration;
 
 namespace SecureNotes
 {
     public class NoteSyncService
     {
         private DatabaseHelper _db;
-        private readonly string _apiBaseUrl;
-        private readonly JavaScriptSerializer _json = new JavaScriptSerializer();
 
         private DatabaseHelper Db
         {
@@ -26,22 +20,19 @@ namespace SecureNotes
             }
         }
 
-        public NoteSyncService()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
-                .AddEnvironmentVariables()
-                .Build();
-
-            _apiBaseUrl = (config["Api:BaseUrl"] ?? string.Empty).Trim().TrimEnd('/');
-        }
-
         public Note GetNoteById(int noteId)
         {
-            if (TryGetFromApi($"/notes/{noteId}", out Note note) && note != null)
+            try
             {
-                return note;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.GetNoteById(noteId);
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.GetNoteById(noteId);
@@ -49,9 +40,17 @@ namespace SecureNotes
 
         public List<Note> GetNotesForUser(int userId)
         {
-            if (TryGetFromApi($"/users/{userId}/notes", out List<Note> notes) && notes != null)
+            try
             {
-                return notes;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.GetNotes();
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.GetNotesForUser(userId);
@@ -59,9 +58,17 @@ namespace SecureNotes
 
         public List<Note> GetNotesForGroup(int groupId)
         {
-            if (TryGetFromApi($"/groups/{groupId}/notes", out List<Note> notes) && notes != null)
+            try
             {
-                return notes;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.GetNotesForGroup(groupId);
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.GetNotesForGroup(groupId);
@@ -69,9 +76,17 @@ namespace SecureNotes
 
         public int AddNote(Note note)
         {
-            if (TryCreateNoteViaApi(note, out int createdId) && createdId > 0)
+            try
             {
-                return createdId;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.CreateNote(note);
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.AddNote(note);
@@ -79,9 +94,18 @@ namespace SecureNotes
 
         public void UpdateNote(Note note)
         {
-            if (TryUseApi($"/notes/{note.Id}", "PUT", note))
+            try
             {
-                return;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    api.UpdateNote(note);
+                    return;
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             Db.UpdateNote(note);
@@ -89,124 +113,33 @@ namespace SecureNotes
 
         public void DeleteNote(int noteId)
         {
-            if (TryUseApi($"/notes/{noteId}", "DELETE", null))
+            try
             {
-                return;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    api.DeleteNote(noteId);
+                    return;
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             Db.DeleteNote(noteId);
         }
 
-        private bool TryCreateNoteViaApi(Note note, out int createdId)
+        private ApiClient CreateApiClient()
         {
-            createdId = 0;
-
-            if (string.IsNullOrWhiteSpace(_apiBaseUrl))
+            if (string.IsNullOrWhiteSpace(ApiConfig.BaseUrl) || string.IsNullOrWhiteSpace(SessionStore.AccessToken))
             {
-                return false;
+                return null;
             }
 
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(15);
-                    var jsonBody = _json.Serialize(note);
-                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-                    var response = client.PostAsync(_apiBaseUrl + "/notes", content).GetAwaiter().GetResult();
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return false;
-                    }
-
-                    var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    if (string.IsNullOrWhiteSpace(body))
-                    {
-                        return false;
-                    }
-
-                    var map = _json.Deserialize<Dictionary<string, object>>(body);
-                    if (map != null && map.ContainsKey("id") && int.TryParse(map["id"]?.ToString(), out int idFromApi))
-                    {
-                        createdId = idFromApi;
-                        return true;
-                    }
-
-                    if (int.TryParse(body, out int rawId))
-                    {
-                        createdId = rawId;
-                        return true;
-                    }
-
-                    return false;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool TryGetFromApi<T>(string endpoint, out T data)
-        {
-            data = default(T);
-
-            if (string.IsNullOrWhiteSpace(_apiBaseUrl))
-            {
-                return false;
-            }
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(15);
-                    var response = client.GetAsync(_apiBaseUrl + endpoint).GetAwaiter().GetResult();
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return false;
-                    }
-
-                    var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    data = _json.Deserialize<T>(body);
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool TryUseApi(string endpoint, string method, object payload)
-        {
-            if (string.IsNullOrWhiteSpace(_apiBaseUrl))
-            {
-                return false;
-            }
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(15);
-                    var request = new HttpRequestMessage(new HttpMethod(method), _apiBaseUrl + endpoint);
-
-                    if (payload != null)
-                    {
-                        var jsonBody = _json.Serialize(payload);
-                        request.Content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
-                    }
-
-                    var response = client.SendAsync(request).GetAwaiter().GetResult();
-                    return response.IsSuccessStatusCode;
-                }
-            }
-            catch
-            {
-                return false;
-            }
+            var api = new ApiClient(ApiConfig.BaseUrl);
+            api.SetAccessToken(SessionStore.AccessToken);
+            return api;
         }
     }
 }

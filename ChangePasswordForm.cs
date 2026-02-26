@@ -163,26 +163,11 @@ namespace SecureNotes
                 MessageBox.Show(LocalizationManager.Get("passwords_do_not_match"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            try { 
 
-            // Verify current password
-            var currentHash = CryptoService.HashWithPBKDF2(current, Program.CurrentUser.PasswordSalt);
-            if (currentHash != Program.CurrentUser.PasswordHash)
-            {
-                MessageBox.Show(LocalizationManager.Get("current_password_incorrect"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            _accountService.UpdatePassword(Program.CurrentUser.Id, current, newPw);
 
-            // Update password
-            var newSalt = CryptoService.GenerateSalt();
-            var newHash = CryptoService.HashWithPBKDF2(newPw, newSalt);
-
-            try
-            {
-                _accountService.UpdatePassword(Program.CurrentUser.Id, newHash, newSalt);
-                Program.CurrentUser.PasswordHash = newHash;
-                Program.CurrentUser.PasswordSalt = newSalt;
-
-                MessageBox.Show(LocalizationManager.Get("password_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(LocalizationManager.Get("password_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
             }
             catch (Exception ex)

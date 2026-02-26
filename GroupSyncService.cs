@@ -1,17 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
-using System.Web.Script.Serialization;
-using Microsoft.Extensions.Configuration;
+using System.Linq;
 
 namespace SecureNotes
 {
     public class GroupSyncService
     {
         private DatabaseHelper _db;
-        private readonly string _apiBaseUrl;
-        private readonly JavaScriptSerializer _json = new JavaScriptSerializer();
 
         private DatabaseHelper Db
         {
@@ -26,32 +21,62 @@ namespace SecureNotes
             }
         }
 
-        public GroupSyncService()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false)
-                .AddEnvironmentVariables()
-                .Build();
-
-            _apiBaseUrl = (config["Api:BaseUrl"] ?? string.Empty).Trim().TrimEnd('/');
-        }
-
         public Group CreateGroup(int ownerId, string name)
         {
-            if (TryCreateGroupViaApi(ownerId, name, out Group group) && group != null)
+            try
             {
-                return group;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.CreateGroup(name);
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.CreateGroup(ownerId, name);
         }
 
+        public Group JoinGroupByInvite(string inviteCode)
+        {
+            try
+            {
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.JoinGroup(inviteCode);
+                }
+            }
+            catch
+            {
+                // fallback to DB below
+            }
+
+            var group = Db.GetGroupByInvite(inviteCode);
+            if (group != null)
+            {
+                Db.AddMember(group.Id, Program.CurrentUser.Id, "edit");
+            }
+
+            return group;
+        }
+
         public Group GetGroupByInvite(string inviteCode)
         {
-            if (TryGetFromApi($"/groups/by-invite/{Uri.EscapeDataString(inviteCode)}", out Group group) && group != null)
+            try
             {
-                return group;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.GetGroups().FirstOrDefault(g =>
+                        string.Equals(g.InviteCode, inviteCode, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.GetGroupByInvite(inviteCode);
@@ -59,9 +84,17 @@ namespace SecureNotes
 
         public List<Group> GetGroupsForUser(int userId)
         {
-            if (TryGetFromApi($"/users/{userId}/groups", out List<Group> groups) && groups != null)
+            try
             {
-                return groups;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    return api.GetGroups();
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             return Db.GetGroupsForUser(userId);
@@ -69,20 +102,23 @@ namespace SecureNotes
 
         public void AddMember(int groupId, int userId, string role = "edit")
         {
-            var payload = new { groupId, userId, role };
-            if (TryUseApi("/groups/members", "POST", payload))
-            {
-                return;
-            }
-
             Db.AddMember(groupId, userId, role);
         }
 
         public void LeaveGroup(int groupId, int userId)
         {
-            if (TryUseApi($"/groups/{groupId}/members/{userId}", "DELETE", null))
+            try
             {
-                return;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    api.LeaveGroup(groupId);
+                    return;
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             Db.LeaveGroup(groupId, userId);
@@ -90,103 +126,33 @@ namespace SecureNotes
 
         public void DeleteGroup(int groupId, int userId)
         {
-            if (TryUseApi($"/groups/{groupId}?requestUserId={userId}", "DELETE", null))
+            try
             {
-                return;
+                var api = CreateApiClient();
+                if (api != null)
+                {
+                    api.DeleteGroup(groupId);
+                    return;
+                }
+            }
+            catch
+            {
+                // fallback to DB below
             }
 
             Db.DeleteGroup(groupId, userId);
         }
 
-        private bool TryCreateGroupViaApi(int ownerId, string name, out Group group)
+        private ApiClient CreateApiClient()
         {
-            group = null;
-            if (string.IsNullOrWhiteSpace(_apiBaseUrl))
+            if (string.IsNullOrWhiteSpace(ApiConfig.BaseUrl) || string.IsNullOrWhiteSpace(SessionStore.AccessToken))
             {
-                return false;
+                return null;
             }
 
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(15);
-                    var payload = new { ownerId, name };
-                    var content = new StringContent(_json.Serialize(payload), Encoding.UTF8, "application/json");
-                    var response = client.PostAsync(_apiBaseUrl + "/groups", content).GetAwaiter().GetResult();
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return false;
-                    }
-
-                    var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    group = _json.Deserialize<Group>(body);
-                    return group != null;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool TryGetFromApi<T>(string endpoint, out T data)
-        {
-            data = default(T);
-            if (string.IsNullOrWhiteSpace(_apiBaseUrl))
-            {
-                return false;
-            }
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(15);
-                    var response = client.GetAsync(_apiBaseUrl + endpoint).GetAwaiter().GetResult();
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return false;
-                    }
-
-                    var body = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    data = _json.Deserialize<T>(body);
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool TryUseApi(string endpoint, string method, object payload)
-        {
-            if (string.IsNullOrWhiteSpace(_apiBaseUrl))
-            {
-                return false;
-            }
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(15);
-                    var request = new HttpRequestMessage(new HttpMethod(method), _apiBaseUrl + endpoint);
-
-                    if (payload != null)
-                    {
-                        request.Content = new StringContent(_json.Serialize(payload), Encoding.UTF8, "application/json");
-                    }
-
-                    var response = client.SendAsync(request).GetAwaiter().GetResult();
-                    return response.IsSuccessStatusCode;
-                }
-            }
-            catch
-            {
-                return false;
-            }
+            var api = new ApiClient(ApiConfig.BaseUrl);
+            api.SetAccessToken(SessionStore.AccessToken);
+            return api;
         }
     }
 }
