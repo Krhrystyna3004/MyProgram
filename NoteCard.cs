@@ -247,6 +247,10 @@ public class NoteCard : Panel
                                     UseShellExecute = true
                                 });
                             }
+                            else
+                            {
+                                MessageBox.Show(LocalizationManager.Get("file_not_found"), LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
                         }
                         catch { }
                     };

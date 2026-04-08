@@ -1133,6 +1133,57 @@ namespace SecureNotes
             }
         }
 
+        private string GetSharedAttachmentsFolder()
+        {
+            var folder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                "SecureNotes",
+                "Attachments");
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
+
+            return folder;
+        }
+
+        private List<string> NormalizeAttachmentsForStorage(IEnumerable<string> paths)
+        {
+            var normalized = new List<string>();
+            var storageFolder = GetSharedAttachmentsFolder();
+
+            foreach (var rawPath in paths)
+            {
+                var path = (rawPath ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(path))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    if (File.Exists(path))
+                    {
+                        var ext = Path.GetExtension(path);
+                        var targetFile = Path.Combine(storageFolder, $"{Guid.NewGuid():N}{ext}");
+                        File.Copy(path, targetFile, true);
+                        normalized.Add(targetFile);
+                    }
+                    else
+                    {
+                        normalized.Add(path);
+                    }
+                }
+                catch
+                {
+                    normalized.Add(path);
+                }
+            }
+
+            return normalized;
+        }
+
+
         private void BtnSave_Click(object sender, EventArgs e)
         {
             Program.TouchActivity();
@@ -1142,7 +1193,7 @@ namespace SecureNotes
             var selectedColor = cmbColor.SelectedItem as ColorItem;
             var color = selectedColor?.Hex ?? "#FFFFFF";
             var tags = txtTags.Text?.Trim() ?? "";
-            var attachments = string.Join("|", _attachments);
+            var attachments = string.Join("|", NormalizeAttachmentsForStorage(_attachments));
 
             string content;
             if (type == "password")

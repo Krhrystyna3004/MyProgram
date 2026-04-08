@@ -419,6 +419,7 @@ namespace SecureNotes
                 }
                 catch { }
             }
+            Program.SaveCurrentPreferences();
 
             DialogResult = DialogResult.OK;
             Close();

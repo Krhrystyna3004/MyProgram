@@ -15,6 +15,7 @@ namespace SecureNotes
 
         private List<Note> _allNotes = new List<Note>();
         private List<Group> _myGroups = new List<Group>();
+        private List<Note> _currentSharedNotes = new List<Note>();
         private string _tab = "notes";
         private bool _passwordsUnlocked = false;
         private int? _selectedGroupId = null;
@@ -431,6 +432,7 @@ namespace SecureNotes
             btnCopyCode.Text = LocalizationManager.Get("copy_code");
             btnLeaveGroup.Text = LocalizationManager.Get("leave_group");
             btnDeleteGroup.Text = LocalizationManager.Get("delete_group");
+            btnSharedCreateNote.Text = LocalizationManager.Get("add_note");
             btnSharedCreateGroup.Text = LocalizationManager.Get("create");
             btnSharedJoinGroup.Text = LocalizationManager.Get("join_group");
             UIHelpers.SetPlaceholder(txtSearch, LocalizationManager.Get("search"));
@@ -935,7 +937,13 @@ namespace SecureNotes
                 return;
             }
 
-            var notes = _noteSyncService.GetNotesForGroup(_selectedGroupId.Value).Where(TagMatches).Where(TextMatches);
+            _currentSharedNotes = _noteSyncService
+              .GetNotesForGroup(_selectedGroupId.Value)
+              .GroupBy(n => n.Id)
+              .Select(g => g.First())
+              .ToList();
+
+            var notes = _currentSharedNotes.Where(TagMatches).Where(TextMatches);
 
             foreach (var note in notes)
             {
@@ -962,7 +970,16 @@ namespace SecureNotes
 
         private void Card_EditRequested(object sender, int noteId)
         {
-            var n = _noteSyncService.GetNoteById(noteId);
+            var n = _currentSharedNotes.FirstOrDefault(x => x.Id == noteId)
+                  ?? _allNotes.FirstOrDefault(x => x.Id == noteId)
+                  ?? _noteSyncService.GetNoteById(noteId);
+
+            if (n == null)
+            {
+                MessageBox.Show("Note not found.", LocalizationManager.Get("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             using (var modal = new CreateNoteForm(n.Type, n, _myGroups, n.GroupId))
             {
                 if (modal.ShowDialog(this) == DialogResult.OK)
@@ -992,7 +1009,11 @@ namespace SecureNotes
 
         private void LoadNotes()
         {
-            _allNotes = _noteSyncService.GetNotesForUser(Program.CurrentUser.Id);
+            _allNotes = _noteSyncService
+                  .GetNotesForUser(Program.CurrentUser.Id)
+                  .GroupBy(n => n.Id)
+                  .Select(g => g.First())
+                  .ToList();
 
 
             var tags = _allNotes

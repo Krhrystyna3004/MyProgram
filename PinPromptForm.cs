@@ -11,6 +11,7 @@ namespace SecureNotes
         private Button btnSetPin;
         private DatabaseHelper _db;
         private readonly User _user;
+        private readonly NoteSyncService _noteSyncService = new NoteSyncService();
 
         private DatabaseHelper Db
         {
@@ -181,6 +182,43 @@ namespace SecureNotes
             return false;
         }
 
+        private void ReEncryptPasswordNotes(string oldPin, string oldSalt, string newPin, string newSalt)
+        {
+            if (string.IsNullOrWhiteSpace(oldSalt) || string.IsNullOrWhiteSpace(newSalt))
+            {
+                return;
+            }
+
+            var oldKey = CryptoService.DeriveKeyFromPin(oldPin, oldSalt);
+            var newKey = CryptoService.DeriveKeyFromPin(newPin, newSalt);
+
+            var notes = _noteSyncService.GetNotesForUser(_user.Id);
+            foreach (var note in notes)
+            {
+                if (note == null || note.Type != "password" || !note.IsEncrypted)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var plain = CryptoService.DecryptAes(note.IvBase64, note.Content, oldKey);
+                    var enc = CryptoService.EncryptAes(plain, newKey);
+                    note.Content = enc.cipherBase64;
+                    note.IvBase64 = enc.ivBase64;
+                    note.UpdatedAt = DateTime.Now;
+                    _noteSyncService.UpdateNote(note);
+                }
+                catch
+                {
+                    // Skip items that cannot be decrypted with the old key.
+                }
+            }
+
+            Program.SessionKey = newKey;
+        }
+
+
         private void BtnSetPin_Click(object sender, EventArgs e)
         {
             Program.TouchActivity();
@@ -199,21 +237,24 @@ namespace SecureNotes
                 {
                     if (!string.IsNullOrEmpty(_user.PinHash) && !string.IsNullOrEmpty(_user.PinSalt))
                     {
-                        var newPin = Prompt.Show(LocalizationManager.Get("new_pin_prompt"), LocalizationManager.Get("new_pin"));
-                        if (string.IsNullOrWhiteSpace(newPin) || newPin.Length < 4)
+                        var newPinValue = Prompt.Show(LocalizationManager.Get("new_pin_prompt"), LocalizationManager.Get("new_pin"));
+                        if (string.IsNullOrWhiteSpace(newPinValue) || newPinValue.Length < 4)
                         {
                             MessageBox.Show(LocalizationManager.Get("new_pin_min_length"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                             return;
                         }
 
-                        api.ChangePin(pin, newPin);
-                        TryRefreshPinDataFromApi(newPin);
+                        api.ChangePin(pin, newPinValue);
+                        TryRefreshPinDataFromApi(newPinValue);
                         MessageBox.Show(LocalizationManager.Get("pin_changed_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                         return;
                     }
 
+                    var oldSalt = _user.PinSalt;
                     api.SetPin(pin);
                     TryRefreshPinDataFromApi(pin);
+                    // ВИПРАВЛЕНО: використовуємо pin, бо ми його щойно встановили
+                    ReEncryptPasswordNotes(pin, oldSalt, pin, _user.PinSalt);
                     MessageBox.Show(LocalizationManager.Get("pin_created_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
@@ -234,15 +275,15 @@ namespace SecureNotes
                     return;
                 }
 
-                var newPin = Prompt.Show(LocalizationManager.Get("new_pin_prompt"), LocalizationManager.Get("new_pin"));
-                if (string.IsNullOrWhiteSpace(newPin) || newPin.Length < 4)
+                var newPinForDb = Prompt.Show(LocalizationManager.Get("new_pin_prompt"), LocalizationManager.Get("new_pin"));
+                if (string.IsNullOrWhiteSpace(newPinForDb) || newPinForDb.Length < 4)
                 {
                     MessageBox.Show(LocalizationManager.Get("new_pin_min_length"), LocalizationManager.Get("warning"), MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
                 var newSalt = CryptoService.GenerateSalt();
-                var newHash = CryptoService.HashWithPBKDF2(newPin, newSalt);
+                var newHash = CryptoService.HashWithPBKDF2(newPinForDb, newSalt);
 
                 try
                 {
@@ -263,9 +304,12 @@ namespace SecureNotes
 
                 try
                 {
+                    var oldSaltForDb = _user.PinSalt;
                     Db.UpdateUserPin(_user.Id, string.Empty, newHash, newSalt);
                     _user.PinSalt = newSalt;
                     _user.PinHash = newHash;
+                    // ВИПРАВЛЕНО: використовуємо pin
+                    ReEncryptPasswordNotes(pin, oldSaltForDb, pin, newSalt);
                     MessageBox.Show(LocalizationManager.Get("pin_created_success"), LocalizationManager.Get("success"), MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 catch (Exception ex)
@@ -339,6 +383,24 @@ namespace SecureNotes
             Program.SessionKey = CryptoService.DeriveKeyFromPin(pin, _user.PinSalt);
             DialogResult = DialogResult.OK;
             Close();
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // PinPromptForm
+            // 
+            this.ClientSize = new System.Drawing.Size(282, 253);
+            this.Name = "PinPromptForm";
+            this.Load += new System.EventHandler(this.PinPromptForm_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        private void PinPromptForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 

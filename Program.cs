@@ -6,10 +6,10 @@ namespace SecureNotes
 {
     static class Program
     {
-        private static readonly string SettingsPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        private static readonly string SettingsDirectory = Path.Combine(
+             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "SecureNotes",
-            "settings.ini"
+                "users"
         );
 
         public static bool RestartRequested { get; set; } = false;
@@ -23,7 +23,7 @@ namespace SecureNotes
             do
             {
                 RestartRequested = false;
-                LoadSavedPreferences();
+                LoadSavedPreferences(null);
 
                 User logged = null;
                 using (var login = new LoginForm())
@@ -38,6 +38,7 @@ namespace SecureNotes
                 if (logged == null) return;
 
                 CurrentUser = logged;
+                LoadSavedPreferences(CurrentUser.Username);
 
                 if (!string.IsNullOrEmpty(logged.PreferredTheme))
                 {
@@ -67,13 +68,25 @@ namespace SecureNotes
             LastActivity = DateTime.Now;
         }
 
-        private static void LoadSavedPreferences()
+        private static string GetSettingsPath(string username)
+        {
+            var safeUsername = string.IsNullOrWhiteSpace(username) ? "default" : username.Trim().ToLowerInvariant();
+            foreach (var c in Path.GetInvalidFileNameChars())
+            {
+                safeUsername = safeUsername.Replace(c, '_');
+            }
+
+            return Path.Combine(SettingsDirectory, $"{safeUsername}.ini");
+        }
+
+        private static void LoadSavedPreferences(string username)
         {
             try
             {
-                if (File.Exists(SettingsPath))
+                var settingsPath = GetSettingsPath(username);
+                if (File.Exists(settingsPath))
                 {
-                    var lines = File.ReadAllLines(SettingsPath);
+                    var lines = File.ReadAllLines(settingsPath);
                     foreach (var line in lines)
                     {
                         if (line.StartsWith("Theme="))
@@ -99,26 +112,24 @@ namespace SecureNotes
         {
             try
             {
-                var dir = Path.GetDirectoryName(SettingsPath);
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                if (!Directory.Exists(SettingsDirectory)) Directory.CreateDirectory(SettingsDirectory);
                 var lines = new[]
                {
                     $"Theme={ThemeManager.GetThemeName(CurrentTheme)}",
                     $"Language={LocalizationManager.CurrentLanguage}"
                 };
 
-                File.WriteAllLines(SettingsPath, lines);
+                File.WriteAllLines(GetSettingsPath(CurrentUser?.Username), lines);
             }
             catch { }
         }
 
-        // ВИПРАВЛЕНО: Метод для зміни акаунту
         public static void SwitchAccount()
         {
             RestartRequested = true;
             CurrentUser = null;
             SessionKey = null;
-            // НЕ викликаємо Application.Exit() тут - це робиться закриттям MainForm
+          
         }
     }
 }
